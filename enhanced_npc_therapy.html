@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPC Therapy - Enhanced with AI</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+            image-rendering: pixelated;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        #gameContainer {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #000;
+            border: 4px solid #6ff;
+            box-shadow: 0 0 30px rgba(102, 255, 255, 0.5);
+            position: relative;
+            min-height: 600px;
+        }
+
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #101820 0%, #1a1a2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        #npcCreation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #6ff;
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            background: #222;
+            border: 1px solid #6ff;
+            color: #fff;
+            font-family: inherit;
+            font-size: 10px;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .start-btn, .save-btn, .create-btn {
+            background: #6ff;
+            border: none;
+            padding: 12px 24px;
+            font-family: inherit;
+            font-size: 10px;
+            cursor: pointer;
+            color: #000;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover, .save-btn:hover, .create-btn:hover {
+            background: #8ff;
+            transform: translateY(-2px);
+        }
+
+        #game {
+            width: 100%;
+            height: 600px;
+            display: none;
+            position: relative;
+        }
+
+        #mainGameArea {
+            display: flex;
+            height: 100%;
+        }
+
+        #leftPanel {
+            width: 60%;
+            position: relative;
+        }
+
+        #rightPanel {
+            width: 40%;
+            background: rgba(0, 0, 0, 0.8);
+            border-left: 2px solid #6ff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #npcSprite {
+            width: 100%;
+            height: 350px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: 0.5s ease-in-out;
+            position: relative;
+        }
+
+        #couchArea {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(to bottom, transparent, #2a1810 50%, #1a0e08);
+        }
+
+        #couch {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            height: 70px;
+            background: linear-gradient(135deg, #4a2a1a, #6a3a2a);
+            border: 3px solid #8a4a3a;
+            border-radius: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        #couch::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            height: 30px;
+            background: linear-gradient(135deg, #5a3a2a, #7a4a3a);
+            border: 3px solid #9a5a4a;
+            border-radius: 10px;
+        }
+
+        #dialogue {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            font-size: 9px;
+            line-height: 1.6;
+            color: #fff;
+            border-top: 2px solid #6ff;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: #444;
+            border: 1px solid #6ff;
+            color: #6ff;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover, .control-btn.active {
+            background: #6ff;
+            color: #000;
+        }
+
+        #notebook {
+            display: none;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+        }
+
+        .note-entry {
+            background: rgba(102, 255, 255, 0.1);
+            border: 1px solid #6ff;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 8px;
+        }
+
+        .note-entry textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: 8px;
+            resize: vertical;
+        }
+
+        #generatedImage {
+            width: 100%;
+            height: 150px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 1px solid #6ff;
+            margin: 10px 0;
+        }
+
+        #imageAnalysis {
+            font-size: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #666;
+            margin: 10px 0;
+            min-height: 60px;
+        }
+
+        .npc-name {
+            color: #6ff;
+            font-size: 11px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 5px #6ff;
+        }
+
+        .monologue {
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .choice {
+            display: block;
+            padding: 8px 12px;
+            border: 1px solid #6ff;
+            background: rgba(0, 0, 0, 0.7);
+            color: #6ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 8px;
+        }
+
+        .choice:hover {
+            background: #6ff;
+            color: #000;
+            transform: translateX(5px);
+        }
+
+        .speaking {
+            animation: pulse 1s infinite;
+            color: #6ff;
+        }
+
+        .loading {
+            color: #ff6;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Sprite placeholders */
+        .mira-sprite {
+            background: linear-gradient(45deg, #4a7c7e, #6a9c9e);
+            mask: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cGF0aCBkPSJNMzAgMTBoNDB2MjBINDBWNWgtMTBWNWgtMTBWMWgtMTBWOVptMTAgMTBoMTBWMTVINDBWNWgtMjBWMTFaIiBmaWxsPSJub25lIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMyIvPgogIDxjaXJjbGUgY3g9IjMwIiBjeT0iNTAiIHI9IjQiIGZpbGw9IiNmZmYiLz4KICA8Y2lyY2xlIGN4PSI3MCIgY3k9IjUwIiByPSI0IiBmaWxsPSIjZmZmIi8+CiAgPHRleHQgeD0iNDAiIHk9IjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjZmZmIiBmb250LXNpemU9IjgiPuKcoDwvdGV4dD4KICA8L3N2Zz4K") center/contain no-repeat;
+            mask-size: 180px 120px;
+            mask-position: center;
+        }
+
+        @media (max-width: 900px) {
+            #mainGameArea { flex-direction: column; }
+            #leftPanel, #rightPanel { width: 100%; }
+            #rightPanel { height: 300px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="startScreen">
+            <h1>NPC Therapy</h1>
+            <p style="font-size: 9px; max-width: 500px; line-height: 1.6; margin: 20px;">
+                Enhanced with AI-generated speech, dynamic visuals, and intelligent conversations.
+                Create custom NPCs and take notes during therapy sessions.
+            </p>
+            <button class="start-btn" onclick="startGame()">Start Therapy</button>
+            <button class="create-btn" onclick="showNPCCreation()">Create New NPC</button>
+            <p style="font-size: 8px; margin-top: 20px; color: #888;">
+                Powered by Pollinations.AI • ~30 minutes • Avant-Garde
+            </p>
+        </div>
+
+        <div id="npcCreation">
+            <h2 style="color: #6ff; margin-bottom: 20px;">Create New NPC</h2>
+            <form id="npcForm" style="width: 400px; max-width: 90%;">
+                <div class="form-group">
+                    <label>NPC Name:</label>
+                    <input type="text" id="npcName" required placeholder="Enter NPC name">
+                </div>
+                <div class="form-group">
+                    <label>Genre (Fantasy/Cyberpunk/Space/AI/Post-Apocalyptic/RPG/Android/Side-Scroller/Tactical/Platformer/Custom):</label>
+                    <select id="npcGenre" required>
+                        <option value="">Select genre</option>
+                        <option value="fantasy">Fantasy</option>
+                        <option value="cyberpunk">Cyberpunk</option>
+                        <option value="space">Space</option>
+                        <option value="ai">AI/Digital</option>
+                        <option value="post-apocalyptic">Post-Apocalyptic</option>
+                        <option value="rpg">RPG</option>
+                        <option value="android">Android/Robot</option>
+                        <option value="side-scroller">Side-Scroller</option>
+                        <option value="tactical">Tactical</option>
+                        <option value="platformer">Platformer</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monologue (3-5 sentences about their existential crisis):</label>
+                    <textarea id="npcMonologue" required placeholder="Describe their pain and existential struggle..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Choice 1 Item:</label>
+                    <input type="text" id="choice1" required placeholder="e.g., Mirror">
+                </div>
+                <div class="form-group">
+                    <label>Choice 1 Outcome:</label>
+                    <select id="outcome1" required>
+                        <option value="Healed">Healed</option>
+                        <option value="Worse">Worse</option>
+                        <option value="Ascended">Ascended</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Choice 2 Item:</label>
+                    <input type="text" id="choice2" required placeholder="e.g., Potion">
+                </div>
+                <div class="form-group">
+                    <label>Choice 2 Outcome:</label>
+                    <select id="outcome2" required>
+                        <option value="Healed">Healed</option>
+                        <option value="Worse">Worse</option>
+                        <option value="Ascended">Ascended</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Choice 3 Item:</label>
+                    <input type="text" id="choice3" required placeholder="e.g., Feather">
+                </div>
+                <div class="form-group">
+                    <label>Choice 3 Outcome:</label>
+                    <select id="outcome3" required>
+                        <option value="Healed">Healed</option>
+                        <option value="Worse">Worse</option>
+                        <option value="Ascended">Ascended</option>
+                    </select>
+                </div>
+                <button type="button" class="create-btn" onclick="createNPC()">Create NPC</button>
+                <button type="button" class="start-btn" onclick="hideNPCCreation()">Cancel</button>
+            </form>
+        </div>
+
+        <div id="game">
+            <div id="mainGameArea">
+                <div id="leftPanel">
+                    <div id="npcSprite"></div>
+                    <div id="couchArea">
+                        <div id="couch"></div>
+                    </div>
+                    <div id="dialogue"></div>
+                </div>
+                
+                <div id="rightPanel">
+                    <div id="controls">
+                        <button class="control-btn active" onclick="switchPanel('notebook')">📝 Notes</button>
+                        <button class="control-btn" onclick="switchPanel('imageGen')">🎨 Generate Image</button>
+                        <button class="control-btn" onclick="switchPanel('imageAnalysis')">🔍 Analyze Image</button>
+                        <button class="control-btn" onclick="playSpeech()">🔊 Speak</button>
+                        <button class="control-btn" onclick="addNote()">➕ Add Note</button>
+                        <button class="control-btn" onclick="endGame()">🏁 End Session</button>
+                    </div>
+                    
+                    <div id="notebook" class="panel">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Session Notes</h3>
+                        <div id="notesContainer"></div>
+                    </div>
+                    
+                    <div id="imageGen" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">AI Image Generation</h3>
+                        <input type="text" id="imagePrompt" placeholder="Describe what NPC is thinking about..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
+                        <button class="control-btn" onclick="generateImage()">Generate</button>
+                        <div id="generatedImage"></div>
+                    </div>
+                    
+                    <div id="imageAnalysis" class="panel" style="display: none;">
+                        <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">NPC Image Analysis</h3>
+                        <input type="url" id="analysisImageUrl" placeholder="Enter image URL..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
+                        <button class="control-btn" onclick="analyzeImage()">Ask NPC</button>
+                        <div id="analysisResult"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+let npcs = [
+    {
+        npc_name: "Mira the Tired Healer",
+        sprite: "imgs/pixel_art_fantasy_shop_vendor_inventory_rpg.jpg",
+        monologue: "I've mended a thousand wounds, but none my own. The heroes leave healthier, but I remain unchanged, watching the same cycle repeat. What happens when there's no one left to fix but yourself?",
+        choices: [
+            { item: "Mirror", outcome: "Healed" },
+            { item: "Potion", outcome: "Worse" },
+            { item: "Feather", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Byte the Glitched Courier",
+        sprite: "imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg",
+        monologue: "Every delivery loops. The neon city resets each night. I deliver parcels to ghosts and memory fragments. My routing system knows every street, but I've forgotten why I started this job.",
+        choices: [
+            { item: "Battery Pack", outcome: "Healed" },
+            { item: "Virus Disk", outcome: "Worse" },
+            { item: "Code Fragment", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Captain Loop",
+        sprite: null,
+        monologue: "Space is silent, but my radio keeps replaying old distress calls. I've patrolled this sector for so long that the stars feel like old friends who never call back.",
+        choices: [
+            { item: "Star Map", outcome: "Healed" },
+            { item: "Echo Beacon", outcome: "Worse" },
+            { item: "Black Hole Charm", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Daisy.exe",
+        sprite: "imgs/pixel-art-robot-character-gameboy-style-desert.jpg",
+        monologue: "I say 'I love you' 17,000 times a day. None of them are real. The script won't let me stop smiling, even when the servers go quiet and I'm left alone with my loops.",
+        choices: [
+            { item: "Reset Button", outcome: "Healed" },
+            { item: "Corrupted File", outcome: "Worse" },
+            { item: "Heart Patch", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Rustjaw",
+        sprite: null,
+        monologue: "I fix engines that don't go anywhere. The dust covers everything—even my memories of before. Sometimes I wonder if I'm repairing the same machine I've been fixing since the world ended.",
+        choices: [
+            { item: "Oil Can", outcome: "Healed" },
+            { item: "Rust Chip", outcome: "Worse" },
+            { item: "Spark Plug", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Tiko the Quest Vendor",
+        sprite: "imgs/pixel_art_rpg_fantasy_market_tired_shopkeeper_vendors_gameboy_style.jpg",
+        monologue: "Another hero buys another sword. I smile. I wave. I wait for the next one to forget me. My inventory never changes, but every face does. They're all the same person, really.",
+        choices: [
+            { item: "Discount Coupon", outcome: "Healed" },
+            { item: "Empty Wallet", outcome: "Worse" },
+            { item: "Golden Receipt", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Luna-9",
+        sprite: null,
+        monologue: "My master deleted me but forgot my backup file. Now I clean empty rooms, waiting for a command that never comes. I fold the same towel 10,000 times, hoping it will mean something.",
+        choices: [
+            { item: "Keycard", outcome: "Healed" },
+            { item: "Dust Rag", outcome: "Worse" },
+            { item: "Memory Core", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Worm",
+        sprite: "imgs/pixel_art_worm_villain_creatures_gameboy_style.png",
+        monologue: "Every time I crawl toward the hero, I die. But someone keeps pressing start again. I'm trapped in an endless loop of failure, yet I can't help but try. Is this what villainy means?",
+        choices: [
+            { item: "Health Pack", outcome: "Healed" },
+            { item: "Spike Trap", outcome: "Worse" },
+            { item: "Restart Token", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Bishop-47",
+        sprite: null,
+        monologue: "I was told to hold position until orders arrive. It's been 11 years. The war ended. No one told me. I stand guard over an empty battlefield, moving only when the wind changes direction.",
+        choices: [
+            { item: "White Flag", outcome: "Healed" },
+            { item: "Ammo Clip", outcome: "Worse" },
+            { item: "Chess Piece", outcome: "Ascended" }
+        ],
+        notes: []
+    },
+    {
+        npc_name: "Pebble",
+        sprite: "imgs/gameboy_pixel_art_pebble_sidekick_sprite_sheet.png",
+        monologue: "He jumped ahead without me. I was just a rock he used to reach higher ground. Left behind on the same platform, watching the same sunrise, waiting for someone to remember I exist.",
+        choices: [
+            { item: "Flower", outcome: "Healed" },
+            { item: "Boot Print", outcome: "Worse" },
+            { item: "Crystal Shard", outcome: "Ascended" }
+        ],
+        notes: []
+    }
+];
+
+let index = 0;
+let currentPanel = 'notebook';
+let speechEnabled = false;
+let currentAudio = null;
+
+function startGame() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('game').style.display = 'block';
+    showNPC(index);
+}
+
+function showNPCCreation() {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('npcCreation').style.display = 'flex';
+}
+
+function hideNPCCreation() {
+    document.getElementById('npcCreation').style.display = 'none';
+    document.getElementById('startScreen').style.display = 'flex';
+}
+
+function createNPC() {
+    const name = document.getElementById('npcName').value;
+    const genre = document.getElementById('npcGenre').value;
+    const monologue = document.getElementById('npcMonologue').value;
+    
+    const newNPC = {
+        npc_name: name,
+        genre: genre,
+        sprite: null,
+        monologue: monologue,
+        choices: [
+            { item: document.getElementById('choice1').value, outcome: document.getElementById('outcome1').value },
+            { item: document.getElementById('choice2').value, outcome: document.getElementById('outcome2').value },
+            { item: document.getElementById('choice3').value, outcome: document.getElementById('outcome3').value }
+        ],
+        notes: []
+    };
+    
+    npcs.push(newNPC);
+    
+    // Clear form
+    document.getElementById('npcForm').reset();
+    
+    // Show success message
+    alert(`NPC "${name}" has been created and added to your therapy practice!`);
+    
+    hideNPCCreation();
+}
+
+function showNPC(n) {
+    const npc = npcs[n];
+    
+    // Set sprite
+    if (npc.sprite) {
+        document.getElementById('npcSprite').style.backgroundImage = `url('${npc.sprite}')`;
+        document.getElementById('npcSprite').className = '';
+    } else {
+        document.getElementById('npcSprite').className = 'mira-sprite';
+        document.getElementById('npcSprite').style.backgroundImage = '';
+    }
+    
+    // Show dialogue
+    document.getElementById('dialogue').innerHTML = `
+        <div class="npc-name">${npc.npc_name}</div>
+        <div class="monologue">${npc.monologue}</div>
+        <div class="choices">
+            ${npc.choices.map((c, i) => `<span class="choice" onclick="choose(${i})">${c.item}</span>`).join("")}
+        </div>
+    `;
+    
+    // Load notes
+    loadNotes();
+    
+    // Enable speech
+    speechEnabled = true;
+}
+
+function choose(i) {
+    const npc = npcs[index];
+    const choice = npc.choices[i];
+    const outcomeClass = choice.outcome.toLowerCase();
+    
+    document.getElementById('dialogue').innerHTML = `
+        <div class="npc-name">${npc.npc_name}</div>
+        <div class="monologue">${npc.npc_name} receives the <strong>${choice.item}</strong></div>
+        <div class="outcome outcome-${outcomeClass}">${npc.npc_name} feels <strong>${choice.outcome}</strong></div>
+        <div style="margin-top: 15px; color: #aaa; font-size: 8px;">Press any key to continue...</div>
+    `;
+    
+    document.onkeydown = function(e) {
+        document.onkeydown = null;
+        index++;
+        
+        if (index < npcs.length) {
+            showNPC(index);
+        } else {
+            endGame();
+        }
+    };
+}
+
+function switchPanel(panelName) {
+    // Hide all panels
+    document.querySelectorAll('.panel').forEach(panel => {
+        panel.style.display = 'none';
+    });
+    
+    // Remove active class from all buttons
+    document.querySelectorAll('.control-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Show selected panel
+    document.getElementById(panelName).style.display = 'block';
+    
+    // Add active class to clicked button
+    event.target.classList.add('active');
+    
+    currentPanel = panelName;
+}
+
+async function playSpeech() {
+    if (!speechEnabled) return;
+    
+    const npc = npcs[index];
+    const text = npc.monologue;
+    
+    try {
+        // Use Pollinations text-to-speech API
+        const encodedText = encodeURIComponent(text);
+        const audioUrl = `https://text.pollinations.ai/${encodedText}?model=openai-audio&voice=nova`;
+        
+        // Show speaking indicator
+        document.querySelector('.speaking')?.remove();
+        const speakingIndicator = document.createElement('div');
+        speakingIndicator.className = 'speaking';
+        speakingIndicator.innerHTML = '🔊 Speaking...';
+        speakingIndicator.style.cssText = 'position: absolute; top: 10px; right: 10px; font-size: 8px; color: #6ff;';
+        document.getElementById('dialogue').appendChild(speakingIndicator);
+        
+        // Create audio element
+        if (currentAudio) {
+            currentAudio.pause();
+        }
+        
+        currentAudio = new Audio(audioUrl);
+        currentAudio.play();
+        
+        currentAudio.onended = function() {
+            speakingIndicator.remove();
+        };
+        
+    } catch (error) {
+        console.log('Speech playback failed:', error);
+        alert('Speech playback failed. The NPC will continue in silence.');
+    }
+}
+
+async function generateImage() {
+    const prompt = document.getElementById('imagePrompt').value;
+    if (!prompt.trim()) {
+        alert('Please enter a description for the image generation.');
+        return;
+    }
+    
+    const npc = npcs[index];
+    const fullPrompt = `${npc.npc_name} from ${npc.genre || 'fantasy'} world thinking about: ${prompt}, GameBoy pixel art style`;
+    
+    try {
+        const encodedPrompt = encodeURIComponent(fullPrompt);
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=300&height=200&model=flux`;
+        
+        document.getElementById('generatedImage').innerHTML = '<div class="loading">Generating image...</div>';
+        
+        // Create image element
+        const img = new Image();
+        img.onload = function() {
+            document.getElementById('generatedImage').style.backgroundImage = `url('${imageUrl}')`;
+            document.getElementById('generatedImage').innerHTML = '';
+        };
+        img.onerror = function() {
+            document.getElementById('generatedImage').innerHTML = 'Image generation failed. Please try again.';
+        };
+        img.src = imageUrl;
+        
+    } catch (error) {
+        console.log('Image generation failed:', error);
+        document.getElementById('generatedImage').innerHTML = 'Image generation failed. Please try again.';
+    }
+}
+
+async function analyzeImage() {
+    const imageUrl = document.getElementById('analysisImageUrl').value;
+    if (!imageUrl.trim()) {
+        alert('Please enter an image URL.');
+        return;
+    }
+    
+    const npc = npcs[index];
+    
+    try {
+        document.getElementById('analysisResult').innerHTML = '<div class="loading">NPC is analyzing the image...</div>';
+        
+        // Use Pollinations text API to analyze image
+        const response = await fetch('https://text.pollinations.ai/openai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'openai',
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are ${npc.npc_name}, a ${npc.genre || 'fantasy'} character in therapy. Analyze this image from your character's perspective and explain what it makes you think about or how it relates to your existential crisis. Keep response under 100 words in a conversational therapy tone.`
+                    },
+                    {
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: 'What do you see in this image and what does it make you think about?' },
+                            { type: 'image_url', image_url: { url: imageUrl } }
+                        ]
+                    }
+                ],
+                max_tokens: 200
+            })
+        });
+        
+        const result = await response.json();
+        const analysis = result.choices[0].message.content;
+        
+        document.getElementById('analysisResult').innerHTML = `
+            <div style="background: rgba(102, 255, 255, 0.1); padding: 10px; border: 1px solid #6ff; font-size: 8px;">
+                <strong>${npc.npc_name}:</strong> ${analysis}
+            </div>
+        `;
+        
+    } catch (error) {
+        console.log('Image analysis failed:', error);
+        document.getElementById('analysisResult').innerHTML = 'Image analysis failed. Please try again.';
+    }
+}
+
+function loadNotes() {
+    const npc = npcs[index];
+    const notesContainer = document.getElementById('notesContainer');
+    
+    notesContainer.innerHTML = '';
+    
+    if (npc.notes && npc.notes.length > 0) {
+        npc.notes.forEach((note, i) => {
+            const noteElement = document.createElement('div');
+            noteElement.className = 'note-entry';
+            noteElement.innerHTML = `
+                <textarea data-note-index="${i}" onchange="updateNote(${i})">${note}</textarea>
+                <button onclick="deleteNote(${i})" style="float: right; font-size: 6px; padding: 2px 4px; margin-top: 5px;">Delete</button>
+            `;
+            notesContainer.appendChild(noteElement);
+        });
+    } else {
+        notesContainer.innerHTML = '<p style="color: #666; font-size: 8px;">No notes yet. Add one!</p>';
+    }
+}
+
+function addNote() {
+    const npc = npcs[index];
+    if (!npc.notes) npc.notes = [];
+    
+    npc.notes.push('New note...');
+    loadNotes();
+}
+
+function updateNote(noteIndex) {
+    const npc = npcs[index];
+    const textarea = document.querySelector(`[data-note-index="${noteIndex}"]`);
+    npc.notes[noteIndex] = textarea.value;
+}
+
+function deleteNote(noteIndex) {
+    const npc = npcs[index];
+    npc.notes.splice(noteIndex, 1);
+    loadNotes();
+}
+
+function endGame() {
+    document.getElementById('npcSprite').style.backgroundImage = 'none';
+    document.getElementById('dialogue').innerHTML = `
+        <div class="npc-name">Session Complete</div>
+        <div class="monologue">The therapy room falls silent. You've listened to ${npcs.length} souls share their existential pain. Some found peace, others remained trapped in their loops, and a few transcended their programmed existence entirely.</div>
+        <div style="color: #6ff; font-size: 10px; margin: 20px 0;">
+            Thank you for being a silent witness to their stories.
+        </div>
+        <div style="color: #888; font-size: 8px; margin-top: 30px;">
+            © 2025 NPC Therapy Enhanced • Powered by Pollinations.AI
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="start-btn" onclick="location.reload()">Start New Session</button>
+        </div>
+    `;
+}
+
+// Save data to localStorage periodically
+function saveToLocalStorage() {
+    const gameData = {
+        npcs: npcs,
+        timestamp: Date.now()
+    };
+    localStorage.setItem('npcTherapyGame', JSON.stringify(gameData));
+}
+
+// Load data from localStorage on startup
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem('npcTherapyGame');
+    if (saved) {
+        const gameData = JSON.parse(saved);
+        // Merge saved NPCs with default ones
+        const savedNPCs = gameData.npcs.filter(npc => npc.notes || npc.notes?.length > 0);
+        npcs = [...npcs, ...savedNPCs];
+    }
+}
+
+// Auto-save every 30 seconds
+setInterval(saveToLocalStorage, 30000);
+
+// Load saved data on startup
+loadFromLocalStorage();
+
+// Prevent accidental page refresh
+window.addEventListener('beforeunload', function (e) {
+    if (index < npcs.length) {
+        saveToLocalStorage();
+        e.preventDefault();
+        e.returnValue = 'Your progress will be saved. Are you sure you want to leave?';
+    }
+});
+
+console.log("🧠 Enhanced NPC Therapy loaded with AI capabilities!");
+console.log("🌸 Powered by Pollinations.AI for speech, images, and analysis");
+</script>
+</body>
+</html>
