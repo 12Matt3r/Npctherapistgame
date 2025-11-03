@@ -50,7 +50,9 @@ organized_photos/
 │   ├── character_44/        # Farm Sim Widow
 │   ├── character_45/        # NoEmotion Goldmask – Sad Version
 │   ├── character_46/        # Rogue AI Companion (ARTHUR-7)
-│   └── character_47/        # Zombie Who Regained Memory (Marcus "Memory" Thornfield)
+│   ├── character_47/        # Zombie Who Regained Memory (Marcus "Memory" Thornfield)
+│   ├── character_48/        # Meta-NPC (NARRATOR-HELP-7)
+│   └── character_49/        # Hackathon Judge (Dr. Patricia "Judge" Stevens)
 └── natural_habitat/         # Images of characters in their original game settings
     ├── character_01/        # Same character mapping as above
     ├── character_02/
@@ -78,6 +80,7 @@ Example: `character_01_exhausted_quest_giver_v1.jpg`
 - **Digital Beings**: 12, 23, 25, 32, 33, 46
 - **Gaming Archetypes**: 7, 15, 17, 19, 39
 - **Special Cases**: 31, 34, 35, 41, 42, 43, 44, 45, 47
+- **Meta Characters**: 48, 49
 
 Created: 2025-11-04
-Total Characters: 47
+Total Characters: 49
