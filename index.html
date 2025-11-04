@@ -605,6 +605,54 @@
             z-index: 20;
         }
 
+        /* Music Player Styles */
+        #musicPlayer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #6ff;
+            padding: 10px;
+            z-index: 2000;
+            transition: all 0.3s ease;
+        }
+
+        #musicPlayer.minimized {
+            height: 20px;
+            width: 50px;
+            overflow: hidden;
+        }
+
+        #playerControls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #playerControls button {
+            background: #6ff;
+            border: none;
+            color: #000;
+            padding: 5px 8px;
+            cursor: pointer;
+        }
+
+        #youtubePlayer {
+            width: 200px;
+            height: 100px;
+            margin-top: 10px;
+        }
+
+        #minimizePlayer {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #6ff;
+            border: none;
+            padding: 2px 5px;
+            cursor: pointer;
+        }
+
         @media (max-width: 1000px) {
             #mainGameArea { flex-direction: column; }
             #leftPanel, #rightPanel { width: 100%; }
@@ -665,9 +713,9 @@
                 AI-powered conversations, emotional state tracking, fourth wall breaks, and deep psychological exploration.
                 Journey into NPC worlds, understand their pain, and guide them through meaningful healing.
             </p>
-            <button class="start-btn" onclick="startGame()">Begin Therapy Journey</button>
-            <button class="create-btn" onclick="showNPCCreation()">Create New NPC</button>
-            <button class="credits-btn" onclick="showCredits()">Credits</button>
+            <button class="start-btn" onclick="startGame(); playSound('click');">Begin Therapy Journey</button>
+            <button class="create-btn" onclick="showNPCCreation(); playSound('click');">Create New NPC</button>
+            <button class="credits-btn" onclick="showCredits(); playSound('click');">Credits</button>
             <p style="font-size: 8px; margin-top: 20px; color: #888;">
                 Powered by Pollinations.AI • Immersive Flow • AI Enhanced • ~60 minutes
             </p>
@@ -710,8 +758,8 @@
                     <label>Special Archetype (Optional):</label>
                     <input type="text" id="npcArchetype" placeholder="e.g., Deleted Save File, Failed Hero">
                 </div>
-                <button type="button" class="create-btn" onclick="createNPC()">Create NPC</button>
-                <button type="button" class="start-btn" onclick="hideNPCCreation()">Cancel</button>
+                <button type="button" class="create-btn" onclick="createNPC(); playSound('confirm');">Create NPC</button>
+                <button type="button" class="start-btn" onclick="hideNPCCreation(); playSound('cancel');">Cancel</button>
             </form>
         </div>
 
@@ -728,11 +776,12 @@
         <div id="habitatScreen" style="display: none;">
             <div id="habitatContent">
                 <h2 class="screen-title" id="habitatTitle"></h2>
-                <div class="habitat-image" id="habitatImage">
-                    <div class="npc-sprite" id="habitatSprite"></div>
+                <div class="habitat-image">
+                    <img id="habitatImage" src="" alt="Habitat Image" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img id="habitatSprite" src="" alt="NPC Sprite" class="npc-sprite">
                 </div>
                 <p class="habitat-description" id="habitatDescription"></p>
-                <button class="transition-btn" onclick="enterTherapyOffice()">Enter Therapy Office →</button>
+                <button class="transition-btn" onclick="enterTherapyOffice(); playSound('transition');">Enter Therapy Office →</button>
             </div>
         </div>
 
@@ -776,9 +825,9 @@
 
                 <div class="therapy-controls">
                     <div class="control-panel">
-                        <button class="control-btn" id="nextQuestionBtn" onclick="askTherapyQuestion()" disabled>Ask New Questions</button>
-                        <button class="control-btn" onclick="endSession()" id="endSessionBtn" disabled>End Session</button>
-                        <button class="control-btn" onclick="skipDialogue()" id="skipBtn">Continue</button>
+                        <button class="control-btn" id="nextQuestionBtn" onclick="askTherapyQuestion(); playSound('click');" disabled>Ask New Questions</button>
+                        <button class="control-btn" onclick="endSession(); playSound('confirm');" id="endSessionBtn" disabled>End Session</button>
+                        <button class="control-btn" onclick="skipDialogue(); playSound('click');" id="skipBtn">Continue</button>
                     </div>
                 </div>
             </div>
@@ -791,18 +840,18 @@
 
                 <div id="rightPanel">
                     <div id="controls">
-                        <button class="panel-btn active" onclick="switchPanel('notebook')">📝 Notes</button>
-                        <button class="panel-btn" onclick="switchPanel('imageGen')">🎨 Generate Image</button>
-                        <button class="panel-btn" onclick="switchPanel('imageAnalysis')">🔍 Analyze Image</button>
-                        <button class="panel-btn" onclick="playSpeech()">🔊 Speak</button>
-                        <button class="panel-btn" onclick="checkTransference()">💕 Transference</button>
-                        <button class="panel-btn" onclick="checkFourthWall()">🖥️ Fourth Wall</button>
-                        <button class="panel-btn" onclick="triggerGlitch()">⚡ Glitch</button>
-                        <button class="panel-btn" onclick="addNote()">➕ Add Note</button>
-                        <button class="panel-btn" onclick="switchPanel('freeInput')">💬 Free Input</button>
-                        <button class="panel-btn" onclick="showConnectionMap()">🗺️ Connection Map</button>
-                        <button class="panel-btn" onclick="showRorschachTest()">🎨 Rorschach Test</button>
-            <button class="side-panel-btn" onclick="showAudioJournal()">Audio Journal</button>
+                        <button class="panel-btn active" onclick="switchPanel('notebook'); playSound('switch');">📝 Notes</button>
+                        <button class="panel-btn" onclick="switchPanel('imageGen'); playSound('switch');">🎨 Generate Image</button>
+                        <button class="panel-btn" onclick="switchPanel('imageAnalysis'); playSound('switch');">🔍 Analyze Image</button>
+                        <button class="panel-btn" onclick="playSpeech(); playSound('click');">🔊 Speak</button>
+                        <button class="panel-btn" onclick="checkTransference(); playSound('click');">💕 Transference</button>
+                        <button class="panel-btn" onclick="checkFourthWall(); playSound('click');">🖥️ Fourth Wall</button>
+                        <button class="panel-btn" onclick="triggerGlitch(); playSound('glitch');">⚡ Glitch</button>
+                        <button class="panel-btn" onclick="addNote(); playSound('click');">➕ Add Note</button>
+                        <button class="panel-btn" onclick="switchPanel('freeInput'); playSound('switch');">💬 Free Input</button>
+                        <button class="panel-btn" onclick="showConnectionMap(); playSound('click');">🗺️ Connection Map</button>
+                        <button class="panel-btn" onclick="showRorschachTest(); playSound('click');">🎨 Rorschach Test</button>
+                        <button class="side-panel-btn" onclick="showAudioJournal(); playSound('click');">Audio Journal</button>
                     </div>
 
                     <div id="notebook" class="panel">
@@ -813,21 +862,21 @@
                     <div id="imageGen" class="panel" style="display: none;">
                         <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">AI Image Generation</h3>
                         <input type="text" id="imagePrompt" placeholder="Describe what NPC is thinking about..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
-                        <button class="panel-btn" onclick="generateImage()">Generate</button>
+                        <button class="panel-btn" onclick="generateImage(); playSound('confirm');">Generate</button>
                         <div id="generatedImage"></div>
                     </div>
 
                     <div id="imageAnalysis" class="panel" style="display: none;">
                         <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">NPC Image Analysis</h3>
                         <input type="url" id="analysisImageUrl" placeholder="Enter image URL..." style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 8px;">
-                        <button class="panel-btn" onclick="analyzeImage()">Ask NPC</button>
+                        <button class="panel-btn" onclick="analyzeImage(); playSound('confirm');">Ask NPC</button>
                         <div id="analysisResult"></div>
                     </div>
 
                     <div id="freeInput" class="panel" style="display: none;">
                         <h3 style="color: #6ff; font-size: 10px; margin-bottom: 10px;">Free Response Mode</h3>
                         <textarea class="freeInput" id="playerResponse" placeholder="Type your therapeutic response..."></textarea>
-                        <button class="panel-btn" onclick="analyzePlayerResponse()">Send Response</button>
+                        <button class="panel-btn" onclick="analyzePlayerResponse(); playSound('confirm');">Send Response</button>
                         <div id="responseAnalysis" style="margin-top: 10px; font-size: 8px;"></div>
                     </div>
                 </div>
@@ -839,7 +888,7 @@
             <h2 class="screen-title">Session Complete</h2>
             <div id="sessionSummary"></div>
             <div id="itemReward" class="item-reward"></div>
-            <button class="finish-btn" onclick="nextNPC()">Continue to Next Patient →</button>
+            <button class="finish-btn" onclick="nextNPC(); playSound('transition');">Continue to Next Patient →</button>
         </div>
 
         <!-- Credits Modal -->
@@ -868,7 +917,7 @@
                 <p style="font-size: 9px;">"sofa king sad boi" compositions</p>
                 <a href="https://www.youtube.com/playlist?list=PLPug0RGgea9rPoVpu8ytw7dRHLZb4RNZc" target="_blank" style="font-size: 8px; color: #6ff;">YouTube Playlist</a>
 
-                <button class="credits-btn" onclick="hideCredits()" style="margin-top: 30px;">Close</button>
+                <button class="credits-btn" onclick="hideCredits(); playSound('cancel');" style="margin-top: 30px;">Close</button>
             </div>
         </div>
 
@@ -877,7 +926,7 @@
             <div class="connection-map-content">
                 <h2 style="color: #6ff;">NPC Connection Map</h2>
                 <div id="connectionMapContainer"></div>
-                <button class="credits-btn" onclick="hideConnectionMap()">Close</button>
+                <button class="credits-btn" onclick="hideConnectionMap(); playSound('cancel');">Close</button>
             </div>
         </div>
 
@@ -887,7 +936,7 @@
                 <h2 style="color: #6ff;">Rorschach Test</h2>
                 <img id="rorschachImage" src="" style="width: 100%; max-width: 400px; border: 2px solid #6ff; margin-bottom: 20px;">
                 <textarea id="rorschachInterpretation" rows="4" style="width: 100%; background: #222; border: 1px solid #6ff; color: #fff; font-family: inherit; font-size: 10px; margin-bottom: 20px;" placeholder="What do you see?"></textarea>
-                <button class="credits-btn" onclick="hideRorschachTest()">Close</button>
+                <button class="credits-btn" onclick="hideRorschachTest(); playSound('cancel');">Close</button>
             </div>
         </div>
 
@@ -900,13 +949,85 @@
                     <button id="stopButton" disabled>Stop Recording</button>
                 </div>
                 <div id="audio-journal-entries"></div>
-                <button class="credits-btn" onclick="hideAudioJournal()">Close</button>
+                <button class="credits-btn" onclick="hideAudioJournal(); playSound('cancel');">Close</button>
             </div>
         </div>
     </div>
 
+    <!-- Music Player -->
+    <div id="musicPlayer">
+        <div id="playerControls">
+            <button onclick="togglePlay()">▶️</button>
+            <button onclick="prevVideo()">⏮️</button>
+            <button onclick="nextVideo()">⏭️</button>
+            <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume(this.value)">
+        </div>
+        <div id="youtubePlayer"></div>
+        <button id="minimizePlayer" onclick="toggleMinimize()">-</button>
+    </div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
 <script src="npc-data.js"></script>
 <script>
+// Music Player
+let player;
+let isPlaying = false;
+
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('youtubePlayer', {
+        height: '100',
+        width: '200',
+        playerVars: {
+            'playsinline': 1,
+            'listType': 'playlist',
+            'list': 'PLPug0RGgea9rPoVpu8ytw7dRHLZb4RNZc'
+        },
+        events: {
+            'onReady': onPlayerReady
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    const savedVolume = localStorage.getItem('youtubeVolume');
+    if (savedVolume) {
+        player.setVolume(savedVolume);
+        document.getElementById('volumeSlider').value = savedVolume;
+    }
+}
+
+function togglePlay() {
+    if (isPlaying) {
+        player.pauseVideo();
+    } else {
+        player.playVideo();
+    }
+    isPlaying = !isPlaying;
+    document.querySelector('#playerControls button').textContent = isPlaying ? '⏸️' : '▶️';
+}
+
+function prevVideo() {
+    player.previousVideo();
+}
+
+function nextVideo() {
+    player.nextVideo();
+}
+
+function setVolume(volume) {
+    player.setVolume(volume);
+    localStorage.setItem('youtubeVolume', volume);
+}
+
+function toggleMinimize() {
+    document.getElementById('musicPlayer').classList.toggle('minimized');
+}
+
+function playSound(sound) {
+    const audio = new Audio(`sounds/${sound}.wav`);
+    audio.play();
+}
+
 // Global state variables
 let currentNPCIndex = 0;
 let currentNPC = null;
@@ -1095,9 +1216,9 @@ function showHabitat() {
     
     // Set habitat content
     document.getElementById('habitatTitle').textContent = currentNPC.npc_name;
-    document.getElementById('habitatImage').style.backgroundImage = `url('${currentNPC.habitat_image}')`;
-    document.getElementById('habitatSprite').style.backgroundImage = currentNPC.sprite ? `url('${currentNPC.sprite}')` : 'none';
-    document.getElementById('habitatDescription').textContent = currentNPC.habitat_description;
+    document.getElementById('habitatImage').src = currentNPC.habitat_image;
+    document.getElementById('habitatSprite').src = currentNPC.sprite || '';
+    document.getElementById('habitatDescription').innerHTML = currentNPC.habitat_description;
     
     // Reset emotional state
     emotionalState = { hope: 50, rage: 50, acceptance: 50 };
