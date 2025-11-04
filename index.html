@@ -95,9 +95,7 @@
         .npc-sprite {
             width: 80px;
             height: 80px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+            object-fit: contain;
             position: absolute;
             bottom: 20px;
             right: 20px;
@@ -230,9 +228,7 @@
             transform: translateX(-50%);
             width: 80px;
             height: 80px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+            object-fit: contain;
             transition: all 0.5s ease-in-out;
             filter: drop-shadow(0 0 15px rgba(102, 255, 255, 0.6));
         }
@@ -815,7 +811,7 @@
                 </div>
 
                 <div class="therapy-main">
-                    <div class="npc-on-couch" id="npcSprite"></div>
+                    <img class="npc-on-couch" id="npcOnCouchSprite" alt="NPC on couch">
                     <div class="dialogue-box">
                         <div class="npc-name" id="npcName"></div>
                         <div id="currentDialogue"></div>
@@ -994,6 +990,7 @@ function onPlayerReady(event) {
         player.setVolume(savedVolume);
         document.getElementById('volumeSlider').value = savedVolume;
     }
+    player.setShuffle(true);
 }
 
 function togglePlay() {
@@ -1219,7 +1216,6 @@ function showHabitat() {
     document.getElementById('habitatImage').src = currentNPC.habitat_image;
     document.getElementById('habitatSprite').src = currentNPC.sprite || '';
     document.getElementById('habitatDescription').innerHTML = currentNPC.habitat_description;
-    
     // Reset emotional state
     emotionalState = { hope: 50, rage: 50, acceptance: 50 };
     questionsAsked = 0;
@@ -1242,8 +1238,9 @@ function enterTherapyOffice() {
     
     // Set therapy office content
     document.getElementById('npcName').textContent = currentNPC.npc_name;
-    document.getElementById('npcSprite').style.backgroundImage = currentNPC.sprite ? `url('${currentNPC.sprite}')` : 'none';
-    document.getElementById('npcSprite').className = getNPCAnimationClass(emotionalState);
+    const npcOnCouchSprite = document.getElementById('npcOnCouchSprite');
+    npcOnCouchSprite.src = currentNPC.sprite || '';
+    npcOnCouchSprite.className = 'npc-on-couch ' + getNPCAnimationClass(emotionalState);
     document.getElementById('sessionNumber').textContent = currentNPCIndex + 1;
     document.getElementById('totalSessions').textContent = npcs.length;
     document.getElementById('currentDialogue').innerHTML = `<p>${currentNPC.dialogue}</p>`;
