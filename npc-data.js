@@ -1,3 +1,4 @@
+
 const npcs = [
     {
         id: 1,

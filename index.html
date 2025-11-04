@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NPC Therapy - Ultimate Combined Edition</title>
+    <link rel="icon" href="data:,">
     <script src="https://cdn.jsdelivr.net/npm/dexie@latest/dist/dexie.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -712,6 +713,10 @@
             <button class="start-btn" onclick="startGame(); playSound('click');">Begin Therapy Journey</button>
             <button class="create-btn" onclick="showNPCCreation(); playSound('click');">Create New NPC</button>
             <button class="credits-btn" onclick="showCredits(); playSound('click');">Credits</button>
+            <div style="margin-top: 20px;">
+                <input type="text" id="progressCodeInput" placeholder="Enter progress code" style="padding: 8px; font-size: 8px;">
+                <button class="control-btn" onclick="loadProgress(); playSound('click');">Load</button>
+            </div>
             <p style="font-size: 8px; margin-top: 20px; color: #888;">
                 Powered by Pollinations.AI • Immersive Flow • AI Enhanced • ~60 minutes
             </p>
@@ -722,39 +727,23 @@
             <h2 style="color: #6ff; margin-bottom: 20px;">Create Enhanced NPC</h2>
             <form id="npcForm" style="width: 450px; max-width: 95%;">
                 <div class="form-group">
+                    <label>AI Image Prompt:</label>
+                    <input type="text" id="npcImagePrompt" required placeholder="e.g., a cheerful robot gardener made of copper">
+                </div>
+                <div class="form-group">
                     <label>NPC Name:</label>
                     <input type="text" id="npcName" required placeholder="Enter NPC name">
-                </div>
-                <div class="form-group">
-                    <label>Genre (Fantasy/Cyberpunk/Space/AI/Post-Apocalyptic/RPG/Android/Side-Scroller/Tactical/Platformer/Custom):</label>
-                    <select id="npcGenre" required>
-                        <option value="">Select genre</option>
-                        <option value="fantasy">Fantasy</option>
-                        <option value="cyberpunk">Cyberpunk</option>
-                        <option value="space">Space</option>
-                        <option value="ai">AI/Digital</option>
-                        <option value="post-apocalyptic">Post-Apocalyptic</option>
-                        <option value="rpg">RPG</option>
-                        <option value="android">Android/Robot</option>
-                        <option value="side-scroller">Side-Scroller</option>
-                        <option value="tactical">Tactical</option>
-                        <option value="platformer">Platformer</option>
-                        <option value="custom">Custom</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Habitat Description:</label>
-                    <textarea id="habitatDesc" required placeholder="Describe their world and environment..."></textarea>
                 </div>
                 <div class="form-group">
                     <label>Monologue (Their opening dialogue):</label>
                     <textarea id="npcMonologue" required placeholder="What they say when therapy begins..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Special Archetype (Optional):</label>
-                    <input type="text" id="npcArchetype" placeholder="e.g., Deleted Save File, Failed Hero">
+                    <label>Habitat Description:</label>
+                    <textarea id="habitatDesc" required placeholder="Describe their world and environment..."></textarea>
                 </div>
                 <button type="button" class="create-btn" onclick="createNPC(); playSound('confirm');">Create NPC</button>
+                <button type="button" class="control-btn" onclick="randomizeNPC(); playSound('click');">Randomize</button>
                 <button type="button" class="start-btn" onclick="hideNPCCreation(); playSound('cancel');">Cancel</button>
             </form>
         </div>
@@ -884,6 +873,7 @@
             <h2 class="screen-title">Session Complete</h2>
             <div id="sessionSummary"></div>
             <div id="itemReward" class="item-reward"></div>
+            <div id="progressCode" style="margin-top: 20px; font-size: 10px;"></div>
             <button class="finish-btn" onclick="nextNPC(); playSound('transition');">Continue to Next Patient →</button>
         </div>
 
@@ -907,6 +897,9 @@
                 </div>
 
                 <h3 style="color: #ff6; font-size: 10px; margin-top: 30px;">Special Recognition</h3>
+                <a href="https://www.ChromaAwards.com" target="_blank">
+                    <img src="imgs/logos/IMG_8482.PNG" alt="Chroma Awards Logo" style="width: 150px; margin-top: 10px;">
+                </a>
                 <p style="font-size: 9px;">Chroma Awards (Film • Music • Games)</p>
 
                 <h3 style="color: #ff6; font-size: 10px; margin-top: 30px;">Music Credit</h3>
@@ -950,75 +943,8 @@
         </div>
     </div>
 
-    <!-- Music Player -->
-    <div id="musicPlayer">
-        <div id="playerControls">
-            <button onclick="togglePlay()">▶️</button>
-            <button onclick="prevVideo()">⏮️</button>
-            <button onclick="nextVideo()">⏭️</button>
-            <input type="range" id="volumeSlider" min="0" max="100" value="50" onchange="setVolume(this.value)">
-        </div>
-        <div id="youtubePlayer"></div>
-        <button id="minimizePlayer" onclick="toggleMinimize()">-</button>
-    </div>
-
-<script src="https://www.youtube.com/iframe_api"></script>
 <script src="npc-data.js"></script>
 <script>
-// Music Player
-let player;
-let isPlaying = false;
-
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('youtubePlayer', {
-        height: '100',
-        width: '200',
-        playerVars: {
-            'playsinline': 1,
-            'listType': 'playlist',
-            'list': 'PLPug0RGgea9rPoVpu8ytw7dRHLZb4RNZc'
-        },
-        events: {
-            'onReady': onPlayerReady
-        }
-    });
-}
-
-function onPlayerReady(event) {
-    const savedVolume = localStorage.getItem('youtubeVolume');
-    if (savedVolume) {
-        player.setVolume(savedVolume);
-        document.getElementById('volumeSlider').value = savedVolume;
-    }
-    player.setShuffle(true);
-}
-
-function togglePlay() {
-    if (isPlaying) {
-        player.pauseVideo();
-    } else {
-        player.playVideo();
-    }
-    isPlaying = !isPlaying;
-    document.querySelector('#playerControls button').textContent = isPlaying ? '⏸️' : '▶️';
-}
-
-function prevVideo() {
-    player.previousVideo();
-}
-
-function nextVideo() {
-    player.nextVideo();
-}
-
-function setVolume(volume) {
-    player.setVolume(volume);
-    localStorage.setItem('youtubeVolume', volume);
-}
-
-function toggleMinimize() {
-    document.getElementById('musicPlayer').classList.toggle('minimized');
-}
 
 function playSound(sound) {
     const audio = new Audio(`sounds/${sound}.wav`);
@@ -1059,16 +985,115 @@ function hideCredits() {
 }
 
 function showConnectionMap() {
+    const modal = document.getElementById('connectionMapModal');
     const container = document.getElementById('connectionMapContainer');
-    container.innerHTML = '';
-    npcs.forEach(npc => {
-        if (npc.connected_to && npc.connected_to.length > 0) {
-            const div = document.createElement('div');
-            div.innerHTML = `<strong>${npc.npc_name}</strong> is connected to: ${npc.connected_to.join(', ')}`;
-            container.appendChild(div);
+    container.innerHTML = ''; // Clear previous content
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    container.appendChild(canvas);
+
+    // Set canvas size to fit the container
+    const mapContent = modal.querySelector('.connection-map-content');
+    canvas.width = mapContent.clientWidth - 60; // account for padding
+    canvas.height = mapContent.clientHeight - 100; // account for title and button
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) * 0.85;
+    const nodeRadius = 5;
+
+    const npcPositions = new Map();
+
+    // Calculate positions for each NPC in a circle
+    npcs.forEach((npc, index) => {
+        const angle = (index / npcs.length) * 2 * Math.PI;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        npcPositions.set(npc.npc_name, { x, y, npc });
+    });
+
+    // Draw connection lines
+    ctx.strokeStyle = 'rgba(102, 255, 255, 0.3)';
+    ctx.lineWidth = 1;
+    npcPositions.forEach(pos => {
+        if (pos.npc.connected_to && pos.npc.connected_to.length > 0) {
+            pos.npc.connected_to.forEach(connectionName => {
+                const targetPos = npcPositions.get(connectionName);
+                if (targetPos) {
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y);
+                    ctx.lineTo(targetPos.x, targetPos.y);
+                    ctx.stroke();
+                }
+            });
         }
     });
-    document.getElementById('connectionMapModal').style.display = 'flex';
+
+    // Draw NPC nodes and names
+    npcPositions.forEach(pos => {
+        // Draw node
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, nodeRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#6ff';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Draw name
+        ctx.fillStyle = '#ccc';
+        ctx.font = '8px "Press Start 2P"';
+        ctx.textAlign = 'center';
+
+        // Calculate a position for the text that is further out from the node
+        const textAngle = Math.atan2(pos.y - centerY, pos.x - centerX);
+        const textRadius = radius + 30; // Adjust this value to position the text further out
+        const textX = centerX + textRadius * Math.cos(textAngle);
+        const textY = centerY + textRadius * Math.sin(textAngle);
+
+        ctx.fillText(pos.npc.npc_name, textX, textY);
+    });
+
+    // Add interactivity (tooltip)
+    canvas.addEventListener('mousemove', function(event) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        let hoveredNpc = null;
+        npcPositions.forEach(pos => {
+            const distance = Math.sqrt(Math.pow(mouseX - pos.x, 2) + Math.pow(mouseY - pos.y, 2));
+            if (distance < nodeRadius + 5) { // a bit more tolerance
+                hoveredNpc = pos.npc;
+            }
+        });
+
+        // Clear previous tooltips
+        const existingTooltip = container.querySelector('.map-tooltip');
+        if (existingTooltip) {
+            existingTooltip.remove();
+        }
+
+        if (hoveredNpc) {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'map-tooltip';
+            tooltip.style.position = 'absolute';
+            tooltip.style.left = `${event.clientX - rect.left + 15}px`;
+            tooltip.style.top = `${event.clientY - rect.top}px`;
+            tooltip.style.background = 'rgba(0,0,0,0.8)';
+            tooltip.style.border = '1px solid #6ff';
+            tooltip.style.padding = '8px';
+            tooltip.style.fontSize = '8px';
+            tooltip.style.color = '#fff';
+            tooltip.style.pointerEvents = 'none';
+            tooltip.innerHTML = `<strong>${hoveredNpc.npc_name}</strong><br><em>${hoveredNpc.archetype}</em>`;
+            container.appendChild(tooltip);
+        }
+    });
+
+
+    modal.style.display = 'flex';
 }
 
 function hideConnectionMap() {
@@ -1113,49 +1138,22 @@ function hideNPCCreation() {
 
 function createNPC() {
     const name = document.getElementById('npcName').value;
-    const genre = document.getElementById('npcGenre').value;
-    const habitatDesc = document.getElementById('habitatDesc').value;
     const monologue = document.getElementById('npcMonologue').value;
-    const archetype = document.getElementById('npcArchetype').value;
-    
-    // Assign habitat based on genre
-    const habitatMap = {
-        'fantasy': 'imgs/npc_vendor_habitat.png',
-        'cyberpunk': 'imgs/npc_cyberpunk_habitat.png',
-        'space': 'imgs/npc_space_habitat.png',
-        'ai': 'imgs/npc_robot_habitat.png',
-        'post-apocalyptic': 'imgs/npc_adventure_habitat.png',
-        'rpg': 'imgs/npc_vendor_habitat.png',
-        'android': 'imgs/npc_robot_habitat.png',
-        'side-scroller': 'imgs/npc_worm_habitat.png',
-        'tactical': 'imgs/npc_space_habitat.png',
-        'platformer': 'imgs/npc_pebble_habitat.png',
-        'custom': 'imgs/npc_space_habitat.png'
-    };
-    
-    const spriteMap = {
-        'fantasy': 'imgs/pixel_art_fantasy_shop_vendor_inventory_rpg.jpg',
-        'cyberpunk': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
-        'space': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
-        'ai': 'imgs/pixel-art-robot-character-gameboy-style-desert.jpg',
-        'post-apocalyptic': 'imgs/rustjaw_post_apocalyptic_mechanic_goggles_mask.jpg',
-        'rpg': 'imgs/pixel_art_rpg_fantasy_market_tired_shopkeeper_vendors_gameboy_style.jpg',
-        'android': 'imgs/pixel-art-robot-character-gameboy-style-desert.jpg',
-        'side-scroller': 'imgs/pixel_art_worm_villain_creatures_gameboy_style.png',
-        'tactical': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
-        'platformer': 'imgs/gameboy_pixel_art_pebble_sidekick_sprite_sheet.png',
-        'custom': 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg'
-    };
+    const habitatDesc = document.getElementById('habitatDesc').value;
+    const imagePrompt = document.getElementById('npcImagePrompt').value;
+
+    const encodedPrompt = encodeURIComponent(imagePrompt);
+    const spriteUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=300&height=200&model=flux`;
     
     const newNPC = {
         id: npcs.length + 1,
         npc_name: name,
-        sprite: spriteMap[genre] || 'imgs/pixel_art_cyberpunk_neon_city_robot_courier_glitched.jpg',
-        habitat_image: habitatMap[genre] || 'imgs/npc_space_habitat.png',
+        sprite: spriteUrl,
+        habitat_image: 'imgs/npc_space_habitat.png', // Default habitat
         habitat_description: habitatDesc,
         dialogue: monologue,
-        archetype: archetype || "Custom Character",
-        culture: genre || "Unspecified",
+        archetype: "Custom Character",
+        culture: "Unspecified",
         surface_issue: monologue,
         personal_trauma: "They haven't explored this layer yet.",
         existential_reveal: "Deeper exploration needed.",
@@ -1200,6 +1198,13 @@ function createNPC() {
     document.getElementById('npcForm').reset();
     alert(`NPC "${name}" has been created and added to your therapy practice!`);
     hideNPCCreation();
+}
+
+function randomizeNPC() {
+    const randomNPC = npcs[Math.floor(Math.random() * npcs.length)];
+    document.getElementById('npcName').value = `Copy of ${randomNPC.npc_name}`;
+    document.getElementById('npcMonologue').value = randomNPC.dialogue;
+    document.getElementById('habitatDesc').value = randomNPC.habitat_description;
 }
 
 // Habitat screen
@@ -1292,9 +1297,14 @@ function askTherapyQuestion() {
     
     // Assign therapeutic angles
     const angles = ['empathetic', 'challenging', 'insightful', 'supportive'];
-    
-    questionsContainer.innerHTML = '<div style="font-size: 9px; margin-bottom: 10px; color: #6ff;">Choose your therapeutic approach:</div>';
-    questionsContainer.innerHTML += '<div class="questions-container">';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = 'font-size: 9px; margin-bottom: 10px; color: #6ff;';
+    titleDiv.textContent = 'Choose your therapeutic approach:';
+    questionsContainer.appendChild(titleDiv);
+
+    const questionsGrid = document.createElement('div');
+    questionsGrid.className = 'questions-container';
     
     selectedQuestions.forEach((question, index) => {
         const angle = angles[index % 4];
@@ -1314,7 +1324,7 @@ function askTherapyQuestion() {
             applyEmotionalEffects(question.effects);
             
             // Update NPC animation
-            document.getElementById('npcSprite').className = getNPCAnimationClass(emotionalState);
+            document.getElementById('npcOnCouchSprite').className = 'npc-on-couch ' + getNPCAnimationClass(emotionalState);
             
             // Show NPC response
             showNPCResponse(question, selectedQuestions.indexOf(question));
@@ -1331,10 +1341,10 @@ function askTherapyQuestion() {
             questionsShown = true;
         };
         
-        questionsContainer.appendChild(questionDiv);
+        questionsGrid.appendChild(questionDiv);
     });
-    
-    questionsContainer.innerHTML += '</div>';
+
+    questionsContainer.appendChild(questionsGrid);
     document.getElementById('nextQuestionBtn').disabled = true;
     
     currentQuestionIndex++;
@@ -1513,6 +1523,30 @@ function endSession() {
         <div style="font-size: 7px;">${currentNPC.final_item.description}</div>
         <div style="font-size: 6px; margin-top: 10px; opacity: 0.8;">${currentNPC.final_item.outcome}</div>
     `;
+
+    // Generate and display progress code
+    const progressCode = generateProgressCode();
+    document.getElementById('progressCode').textContent = `Your progress code: ${progressCode}`;
+}
+
+function generateProgressCode() {
+    // A simple way to create a code. Can be made more complex later.
+    return `LEVEL-${currentNPCIndex + 2}`;
+}
+
+function loadProgress() {
+    const code = document.getElementById('progressCodeInput').value.toUpperCase();
+    if (code.startsWith('LEVEL-')) {
+        const level = parseInt(code.split('-')[1]);
+        if (!isNaN(level) && level > 0 && level <= npcs.length + 1) {
+            currentNPCIndex = level - 2;
+            startGame();
+        } else {
+            alert('Invalid progress code.');
+        }
+    } else {
+        alert('Invalid progress code format.');
+    }
 }
 
 function nextNPC() {
@@ -1587,6 +1621,7 @@ function addNote() {
 }
 
 function loadNotes() {
+    if (!currentNPC) return;
     if (!currentNPC.notes) currentNPC.notes = [];
     const notesContainer = document.getElementById('notesContainer');
     
@@ -1633,7 +1668,7 @@ async function speakText(text) {
     
     try {
         const encodedText = encodeURIComponent(text);
-        const audioUrl = `https://text.pollinations.ai/${encodedText}?model=openai-audio&voice=nova`;
+        const audioUrl = `https://text.pollinations.ai/${encodedText}?voice=openai-audio`;
         
         // Stop any currently playing audio
         if (currentAudio) {
