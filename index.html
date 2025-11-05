@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NPC Therapy - Ultimate Combined Edition</title>
     <link rel="icon" href="data:,">
-    <script src="https://cdn.jsdelivr.net/npm/dexie@latest/dist/dexie.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
@@ -683,7 +682,7 @@
             overflow-y: auto;
         }
 
-        #connectionMapModal, #rorschachModal, #audioJournalModal {
+        #connectionMapModal, #rorschachModal, #journalModal {
             position: absolute;
             top: 0;
             left: 0;
@@ -694,6 +693,23 @@
             align-items: center;
             justify-content: center;
             z-index: 1004;
+        }
+        .journal-entry {
+            text-align: center;
+            font-size: 8px;
+        }
+        .journal-entry.healed {
+            filter: none;
+        }
+        .journal-entry.pending {
+            filter: grayscale(1) brightness(0.5);
+        }
+        .journal-entry img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border: 2px solid #6ff;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -712,11 +728,8 @@
             </p>
             <button class="start-btn" onclick="startGame(); playSound('click');">Begin Therapy Journey</button>
             <button class="create-btn" onclick="showNPCCreation(); playSound('click');">Create New NPC</button>
+            <button class="credits-btn" onclick="showJournal(); playSound('click');">Patient Journal</button>
             <button class="credits-btn" onclick="showCredits(); playSound('click');">Credits</button>
-            <div style="margin-top: 20px;">
-                <input type="text" id="progressCodeInput" placeholder="Enter progress code" style="padding: 8px; font-size: 8px;">
-                <button class="control-btn" onclick="loadProgress(); playSound('click');">Load</button>
-            </div>
             <p style="font-size: 8px; margin-top: 20px; color: #888;">
                 Powered by Pollinations.AI • Immersive Flow • AI Enhanced • ~60 minutes
             </p>
@@ -836,7 +849,6 @@
                         <button class="panel-btn" onclick="switchPanel('freeInput'); playSound('switch');">💬 Free Input</button>
                         <button class="panel-btn" onclick="showConnectionMap(); playSound('click');">🗺️ Connection Map</button>
                         <button class="panel-btn" onclick="showRorschachTest(); playSound('click');">🎨 Rorschach Test</button>
-                        <button class="side-panel-btn" onclick="showAudioJournal(); playSound('click');">Audio Journal</button>
                     </div>
 
                     <div id="notebook" class="panel">
@@ -929,22 +941,28 @@
             </div>
         </div>
 
-        <!-- Audio Journal Modal -->
-        <div id="audioJournalModal">
+        <!-- NPC Journal Modal -->
+        <div id="journalModal">
             <div class="connection-map-content">
-                <h2 style="color: #6ff;">Audio Journal</h2>
-                <div id="audio-journal-controls">
-                    <button id="recordButton">Start Recording</button>
-                    <button id="stopButton" disabled>Stop Recording</button>
+                <h2 style="color: #6ff;">Patient Journal</h2>
+                <div id="journalGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 20px; margin-bottom: 20px;"></div>
+                <div style="margin-top: 20px;">
+                    <input type="text" id="progressCodeInput" placeholder="Enter progress code to load" style="padding: 8px; font-size: 8px; width: 70%;">
+                    <button class="control-btn" onclick="loadProgress(); playSound('click');">Load Progress</button>
                 </div>
-                <div id="audio-journal-entries"></div>
-                <button class="credits-btn" onclick="hideAudioJournal(); playSound('cancel');">Close</button>
+                <div id="currentProgressCode" style="margin-top: 15px; font-size: 9px; color: #6ff;"></div>
+                <button class="credits-btn" onclick="hideJournal(); playSound('cancel');" style="margin-top: 20px;">Close</button>
             </div>
         </div>
     </div>
 
 <script src="npc-data.js"></script>
 <script>
+
+// Initialize journal status for each NPC
+npcs.forEach(npc => {
+    npc.status = "Awaiting Session";
+});
 
 function playSound(sound) {
     const audio = new Audio(`sounds/${sound}.wav`);
@@ -1100,6 +1118,33 @@ function hideConnectionMap() {
     document.getElementById('connectionMapModal').style.display = 'none';
 }
 
+function showJournal() {
+    document.getElementById('journalModal').style.display = 'flex';
+    updateJournal();
+}
+
+function hideJournal() {
+    document.getElementById('journalModal').style.display = 'none';
+}
+
+function updateJournal() {
+    const journalGrid = document.getElementById('journalGrid');
+    journalGrid.innerHTML = '';
+
+    npcs.forEach(npc => {
+        const entryDiv = document.createElement('div');
+        const statusClass = npc.status === 'Healed' ? 'healed' : 'pending';
+        entryDiv.className = `journal-entry ${statusClass}`;
+
+        entryDiv.innerHTML = `
+            <img src="${npc.sprite}" alt="${npc.npc_name}" onerror="this.onerror=null; this.src='imgs/default_sprite.png';">
+            <div>${npc.npc_name}</div>
+            <div style="margin-top: 5px; color: #aaa;">${npc.status}</div>
+        `;
+        journalGrid.appendChild(entryDiv);
+    });
+}
+
         function showRorschachTest() {
             const inkblots = [
                 'https://i.ibb.co/P9801tG/rorschach-1.png',
@@ -1116,14 +1161,6 @@ function hideConnectionMap() {
 
         function hideRorschachTest() {
             document.getElementById('rorschachModal').style.display = 'none';
-        }
-
-        function showAudioJournal() {
-            document.getElementById('audioJournalModal').style.display = 'flex';
-        }
-
-        function hideAudioJournal() {
-            document.getElementById('audioJournalModal').style.display = 'none';
         }
 
 function showNPCCreation() {
@@ -1245,6 +1282,7 @@ function showHabitat() {
 
 // Therapy office
 function enterTherapyOffice() {
+    currentNPC.status = "In-Progress";
     document.getElementById('habitatScreen').style.display = 'none';
     document.getElementById('therapyOffice').style.display = 'flex';
     document.getElementById('mainGameArea').style.display = 'none'; // Use immersive flow by default
@@ -1509,6 +1547,13 @@ function endSession() {
     if (emotionalState.hope >= 70) outcome = 'Ascended';
     else if (emotionalState.rage >= 70) outcome = 'Struggling';
     
+    // Update journal status
+    if (emotionalState.hope >= 75 && emotionalState.acceptance >= 75 && emotionalState.rage <= 25) {
+        currentNPC.status = "Healed";
+    } else {
+        currentNPC.status = "Session Complete";
+    }
+
     // Show session summary
     const summaryDiv = document.getElementById('sessionSummary');
     summaryDiv.innerHTML = `
@@ -1535,26 +1580,47 @@ function endSession() {
 
     // Generate and display progress code
     const progressCode = generateProgressCode();
-    document.getElementById('progressCode').textContent = `Your progress code: ${progressCode}`;
+    const progressCodeElement = document.getElementById('currentProgressCode');
+    if(progressCodeElement) {
+        progressCodeElement.textContent = `Your progress code: ${progressCode}`;
+    }
+    showJournal();
 }
 
 function generateProgressCode() {
-    // A simple way to create a code. Can be made more complex later.
-    return `LEVEL-${currentNPCIndex + 2}`;
+    const saveData = {
+        currentNPCIndex: currentNPCIndex + 1,
+        npcStatuses: npcs.map(npc => npc.status)
+    };
+    return btoa(JSON.stringify(saveData));
 }
 
 function loadProgress() {
-    const code = document.getElementById('progressCodeInput').value.toUpperCase();
-    if (code.startsWith('LEVEL-')) {
-        const level = parseInt(code.split('-')[1]);
-        if (!isNaN(level) && level > 0 && level <= npcs.length + 1) {
-            currentNPCIndex = level - 2;
+    const code = document.getElementById('progressCodeInput').value;
+    if (!code) {
+        alert('Please enter a progress code.');
+        return;
+    }
+
+    try {
+        const decodedString = atob(code);
+        const saveData = JSON.parse(decodedString);
+
+        if (saveData && typeof saveData.currentNPCIndex !== 'undefined' && Array.isArray(saveData.npcStatuses)) {
+            currentNPCIndex = saveData.currentNPCIndex -1;
+            saveData.npcStatuses.forEach((status, index) => {
+                if (npcs[index]) {
+                    npcs[index].status = status;
+                }
+            });
+            hideJournal();
             startGame();
         } else {
             alert('Invalid progress code.');
         }
-    } else {
+    } catch (e) {
         alert('Invalid progress code format.');
+        console.error('Error loading progress:', e);
     }
 }
 
@@ -1925,92 +1991,6 @@ loadNotes();
 
 // Auto-save every 30 seconds
 setInterval(saveToLocalStorage, 30000);
-
-// Audio Journal with IndexedDB using Dexie.js
-const db = new Dexie('audioJournalDB');
-db.version(1).stores({
-    audioEntries: '++id, &timestamp, audioBlob'
-});
-
-let mediaRecorder;
-let audioChunks = [];
-
-function setupAudioJournal() {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    await saveAudioEntry(audioBlob);
-                    audioChunks = [];
-                    loadAudioEntries();
-                };
-
-                document.getElementById('recordButton').onclick = () => {
-                    mediaRecorder.start();
-                    document.getElementById('recordButton').disabled = true;
-                    document.getElementById('stopButton').disabled = false;
-                };
-
-                document.getElementById('stopButton').onclick = () => {
-                    mediaRecorder.stop();
-                    document.getElementById('recordButton').disabled = false;
-                    document.getElementById('stopButton').disabled = true;
-                };
-            })
-            .catch(error => {
-                console.error("Error accessing microphone:", error);
-                alert("Microphone access is required for the audio journal. Please allow access and refresh the page.");
-            });
-    } else {
-        alert("Audio recording is not supported in your browser.");
-    }
-}
-
-async function saveAudioEntry(audioBlob) {
-    try {
-        await db.audioEntries.add({
-            timestamp: new Date(),
-            audioBlob: audioBlob
-        });
-    } catch (error) {
-        console.error("Failed to save audio entry:", error);
-    }
-}
-
-async function loadAudioEntries() {
-    const entriesContainer = document.getElementById('audio-journal-entries');
-    entriesContainer.innerHTML = '';
-    const entries = await db.audioEntries.orderBy('timestamp').toArray();
-    entries.forEach(entry => {
-        const audioUrl = URL.createObjectURL(entry.audioBlob);
-        const entryDiv = document.createElement('div');
-        entryDiv.id = `audio-entry-${entry.id}`;
-        entryDiv.innerHTML = `
-            <p style="font-size: 8px;">${new Date(entry.timestamp).toLocaleString()}</p>
-            <audio controls src="${audioUrl}"></audio>
-            <button onclick="deleteAudioEntry(${entry.id})">Delete</button>
-        `;
-        entriesContainer.appendChild(entryDiv);
-    });
-}
-
-async function deleteAudioEntry(id) {
-    await db.audioEntries.delete(id);
-    loadAudioEntries();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    setupAudioJournal();
-    loadAudioEntries();
-});
-
 
 // Console messages
 console.log("🧠 NPC Therapy Ultimate Combined Edition loaded!");
