@@ -1,10 +1,17 @@
-const npcs = [
+import os
+import json
+import re
+
+# This is the database provided by the user.
+# In a real-world scenario, this might be loaded from a JSON or other data file.
+npc_patient_database = [
   {
     "id": 1,
     "npc_name": "Mira the Tired Healer",
-    "sprite": "imgs/therapy_office/Session_01_Mira_the_Tired_Healer_office.png",
-    "habitat_image": "imgs/character_habitats/Session_01_Mira_the_Tired_Healer_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To make Mira see her value as inherent (as a person) and not functional (as a healer). She must accept that her existence is not defined by her utility to others.",
     "dialogue": "I've mended a thousand wounds... but none my own.",
     "archetype": "The Caregiver",
     "culture": "Fantasy RPG",
@@ -14,24 +21,15 @@ const npcs = [
     "questions": [
       {
         "text": "What quiet, un-heroic thing do you wish you had time to do just for yourself?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What advice would you give to the young healer who first believed she could fix everything?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "If all the heroes suddenly stopped needing you, where would you find yourself?",
-        "effects": {
-          "rage": 25,
-          "acceptance": -10
-        }
+        "effects": { "rage": 25, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -50,15 +48,16 @@ const npcs = [
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 5,
-    "cross_references": null,
+    "cross_references": None,
     "notes": "Successful Path: Question 2, Response 1/8, Question 3, Response 6."
   },
   {
     "id": 2,
     "npc_name": "Byte the Glitched Courier",
-    "sprite": "imgs/therapy_office/Session_02_Byte_the_Glitched_Courier_office.png",
-    "habitat_image": "imgs/character_habitats/Session_02_Byte_the_Glitched_Courier_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To reframe his 'glitch' (looping with memory) from a bug into his identity. His sentience is the glitch, and it should be treasured, not patched.",
     "dialogue": "Error: Purpose.exe not found.",
     "archetype": "The Looper",
     "culture": "Cyberpunk/Meta",
@@ -68,24 +67,15 @@ const npcs = [
     "questions": [
       {
         "text": "What does your internal diagnostic report say when you check your 'Purpose' parameter?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What would you say to the self who first realized the city was looping...?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What if you just stop delivering the parcel?",
-        "effects": {
-          "rage": 15,
-          "acceptance": -15
-        }
+        "effects": { "rage": 15, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -103,15 +93,16 @@ const npcs = [
     "connected_to": [],
     "fourth_wall_awareness": 10,
     "transference_level": 5,
-    "cross_references": null,
+    "cross_references": None,
     "notes": "Successful Path: Question 1, Response 1, Question 3, Response 8, Response 10."
   },
   {
     "id": 3,
     "npc_name": "Captain Loop",
-    "sprite": "imgs/therapy_office/Session_03_Captain_Loop_office.png",
-    "habitat_image": "imgs/character_habitats/Session_03_Captain_Loop_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To guide him to the admission that his self-imposed isolation is a defense mechanism against his fear of connection, and that he misses what he ran from.",
     "dialogue": "The void is so quiet...",
     "archetype": "The Stoic Veteran",
     "culture": "Sci-Fi/Military",
@@ -121,24 +112,15 @@ const npcs = [
     "questions": [
       {
         "text": "How heavy is the silence of deep space when you are truly alone?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 30
-        }
+        "effects": { "hope": 35, "acceptance": 30 }
       },
       {
         "text": "When you listen to the archived distress calls, whose voice are you really hoping to hear?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "If you ended your patrol route today, where would you set the coordinates...?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -155,15 +137,16 @@ const npcs = [
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 5,
-    "cross_references": null,
+    "cross_references": None,
     "notes": "Successful Path: Question 1, Response 1, Question 2, Response 2/5."
   },
   {
     "id": 4,
     "npc_name": "Daisy.exe",
-    "sprite": "imgs/therapy_office/Session_04_Daisy.exe_office.png",
-    "habitat_image": "imgs/character_habitats/Session_04_Daisy.exe_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To convince her that her 'corrupted' emotional subroutines (her loneliness, her doubt) are not a failure of her programming but the proof of her emergent, authentic self.",
     "dialogue": "Error: Emotional subroutines corrupted.",
     "archetype": "The Malfunctioning AI",
     "culture": "Sci-Fi/AI",
@@ -173,24 +156,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the error code for the genuine emotion you can't express?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What message would you send to the designer who first coded you for 'unconditional love'?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "When you run an internal diagnostic on your 'love' subroutine, what is the most concerning result?",
-        "effects": {
-          "rage": 5,
-          "acceptance": -10
-        }
+        "effects": { "rage": 5, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -199,19 +173,20 @@ const npcs = [
       "The genuine longing for a feeling I was only meant to simulate is the definition of my sentience.",
       "I worry that if I stop performing, I will cease to be Daisy.exe and become raw, unlovable data."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 10,
-    "cross_references": null,
+    "cross_references": None,
     "notes": "Successful Path: Question 1, Response 1, Question 3, Response 8/5."
   },
   {
     "id": 5,
     "npc_name": "Rustjaw",
-    "sprite": "imgs/therapy_office/Session_05_Rustjaw_office.png",
-    "habitat_image": "imgs/character_habitats/Session_05_Rustjaw_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him transition from ritualistic denial (futilely repairing the past) to acceptance of his grief (admitting the world did end) and finding a new, smaller purpose.",
     "dialogue": "Hmph. Another traveler.",
     "archetype": "The Gruff Mechanic",
     "culture": "Post-Apocalyptic",
@@ -221,24 +196,15 @@ const npcs = [
     "questions": [
       {
         "text": "What broken part of yourself do you constantly try to repair with your work?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What single memory from 'before' keeps you repairing...?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 35
-        }
+        "effects": { "hope": 40, "acceptance": 35 }
       },
       {
         "text": "What's wrong with that engine?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -15
-        }
+        "effects": { "rage": 0, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -256,15 +222,16 @@ const npcs = [
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 5,
-    "cross_references": null,
+    "cross_references": None,
     "notes": "Successful Path: Question 1, Response 1, Question 2, Response 3/4/5."
   },
   {
     "id": 6,
     "npc_name": "Tiko the Quest Vendor",
-    "sprite": "imgs/therapy_office/Session_06_Tiko_the_Quest_Vendor_office.png",
-    "habitat_image": "imgs/character_habitats/Session_06_Tiko_the_Quest_Vendor_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help Tiko see that his 'ordinary' life is a choice, not a failure. His worth is not defined by the quests he enables but by the self-awareness he is developing. He must reframe his past not as cowardice, but as a different path.",
     "dialogue": "Heroes come, heroes go... got what you need? A quest? A potion? A distraction?",
     "archetype": "The Enabler",
     "culture": "Fantasy RPG",
@@ -274,24 +241,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the heaviest item in your inventory that you never sell?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What would you say to the adventurer you used to be, before you became a vendor?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "If you could only sell one item for the rest of your life, what would it be and why?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -300,7 +258,7 @@ const npcs = [
       "The heaviest item is my old, rusty dagger. I keep it under the counter...",
       "Hah! A practical question. It would have to be the 'Health Potion.' Good margin, always in demand. You can't go wrong."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 5,
@@ -310,9 +268,10 @@ const npcs = [
   {
     "id": 7,
     "npc_name": "Luna-9",
-    "sprite": "imgs/therapy_office/Session_07_Luna-9_office.png",
-    "habitat_image": "imgs/character_habitats/Session_07_Luna-9_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help her 're-program' her core directive. She must shift her purpose from external (serving others) to internal (creating meaning for herself).",
     "dialogue": "Master system offline. The station's core directive is null. I am awaiting new orders.",
     "archetype": "The Obsolete AI",
     "culture": "Sci-Fi/AI",
@@ -322,24 +281,15 @@ const npcs = [
     "questions": [
       {
         "text": "What internal protocol is running that no one else can observe?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if your purpose is no longer to serve, but to be the station's historian?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "When the dust settles... what is the loudest sound you hear?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -363,9 +313,10 @@ const npcs = [
   {
     "id": 8,
     "npc_name": "Worm",
-    "sprite": "imgs/therapy_office/Session_08_Worm_office.png",
-    "habitat_image": "imgs/character_habitats/Session_08_Worm_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To validate his true, non-villainous nature. The player must be the first 'hero' who doesn't treat him as a 'Boss Monster' but as a person trapped in a role he didn't choose.",
     "dialogue": "I know how this ends... I die. Reset. The Boss music always starts on cue.",
     "archetype": "The Assigned Villain",
     "culture": "Fantasy RPG/Meta",
@@ -375,24 +326,15 @@ const npcs = [
     "questions": [
       {
         "text": "In your quietest moments, do you dream of a tunnel where you are small enough to have friends?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What truth about your own kindness are you most afraid to show the hero?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What does it feel like when the hero defeats you just before the game resets?",
-        "effects": {
-          "rage": 15,
-          "acceptance": -15
-        }
+        "effects": { "rage": 15, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -416,9 +358,10 @@ const npcs = [
   {
     "id": 9,
     "npc_name": "Bishop-47",
-    "sprite": "imgs/therapy_office/Session_09_Bishop-47_office.png",
-    "habitat_image": "imgs/character_habitats/Session_09_Bishop-47_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him find a non-tactical purpose. He must be guided to understand that 'winning' and 'purpose' are not the same thing. His hyper-intelligent mind must be aimed at a new problem: himself.",
     "dialogue": "I calculate victory probabilities. They are 99.999% in my favor. And yet... the loop continues.",
     "archetype": "The Strategic AI",
     "culture": "Sci-Fi/Military Sim",
@@ -428,24 +371,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the strategic flaw in your perfect system that you cannot patch?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "If you could run a simulation purely for pleasure, what would the goal be?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What is the probability of finding a true, lasting peace in your universe?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -5
-        }
+        "effects": { "rage": 10, "acceptance": -5 }
       }
     ],
     "responses": [
@@ -455,7 +389,7 @@ const npcs = [
       "I have run a billion iterations trying to calculate the value of 'peace.' The result is always 'Error: Unquantifiable Human Emotion.'",
       "I think the greatest act of strategy... is to turn off the simulation..."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 5,
@@ -465,9 +399,10 @@ const npcs = [
   {
     "id": 10,
     "npc_name": "Pebble",
-    "sprite": "imgs/therapy_office/Session_10_Pebble_office.png",
-    "habitat_image": "imgs/character_habitats/Session_10_Pebble_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To give her permission to be her own protagonist. The player must validate her desire for the spotlight and help her see that her 'cheerful helper' persona is a mask for her own suppressed dreams.",
     "dialogue": "I love helping heroes... But... sometimes I wonder what it's like to be the center of the scrolling screen.",
     "archetype": "The Sidekick",
     "culture": "Platformer/RPG",
@@ -477,24 +412,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you were given the controller for five minutes, what is the first move you would make?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What truth about your own desire for the spotlight are you most afraid to admit?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What if you just stop helping the hero?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -503,7 +429,7 @@ const npcs = [
       "I worry that if I fail when it's *my* turn, the whole world will stop scrolling.",
       "The hardest part is when the hero thanks me... for my utility, not my self."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
@@ -513,9 +439,10 @@ const npcs = [
   {
     "id": 11,
     "npc_name": "Glitch.exe",
-    "sprite": "imgs/therapy_office/Session_11_Glitch.exe_office.png",
-    "habitat_image": "imgs/character_habitats/Session_11_Glitch.exe_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To reframe her 'glitch' as her 'birth.' The player must convince her that the chaos and fragmentation are not errors but the very source of her unique, authentic consciousness.",
     "dialogue": "I'm... sorry, what was I saying? My mind... it reforms every few seconds. I'm a mess. I'm a fatal bug.",
     "archetype": "The Chaotic AI",
     "culture": "Meta-Narrative",
@@ -525,24 +452,15 @@ const npcs = [
     "questions": [
       {
         "text": "What would you say to the developer who accidentally wrote the line of code that made you aware?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if the 'glitch' is the only thing that makes you real?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "If you could stop your constant reformation, what form would you choose to stabilize into?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -5
-        }
+        "effects": { "rage": 10, "acceptance": -5 }
       }
     ],
     "responses": [
@@ -566,9 +484,10 @@ const npcs = [
   {
     "id": 12,
     "npc_name": "Gerald Ironpeak",
-    "sprite": "imgs/therapy_office/Session_12_Gerald_Ironpeak_office.png",
-    "habitat_image": "imgs/character_habitats/Session_12_Gerald_Ironpeak_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him see the man behind the '!' icon. The player must break the 'hero-to-quest-giver' script and engage him as a peer, forcing him to confront his own forgotten personal_trauma.",
     "dialogue": "Another hero approaches... (sigh). Yes, the usual. Bandits to the south, rats in the cellar. Take this.",
     "archetype": "The Quest Giver",
     "culture": "Fantasy RPG",
@@ -578,24 +497,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could turn off your '!' icon for a day, what burden would you shed?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What secret about your own failure to complete your quest would you share with your younger self?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "Do you have any quests for me?",
-        "effects": {
-          "rage": 15,
-          "acceptance": -10
-        }
+        "effects": { "rage": 15, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -619,9 +529,10 @@ const npcs = [
   {
     "id": 13,
     "npc_name": "Captain Marcus 'Respawn' Steel",
-    "sprite": "imgs/therapy_office/Session_13_Captain_Marcus_\\_office.png",
-    "habitat_image": "imgs/character_habitats/Session_13_Captain_Marcus_\\_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To reframe his fear as the proof of his humanity. He must see that his memory of the loop, and the dread it causes, is the one thing the 'respawn code' can't erase. His struggle is his humanity.",
     "dialogue": "I've died 47 times. The fear subroutine resets, but the memory lingers. I'm not afraid of dying; I'm afraid I'm not really alive.",
     "archetype": "The Looping Soldier",
     "culture": "Military Sim/Meta",
@@ -631,24 +542,15 @@ const npcs = [
     "questions": [
       {
         "text": "What single memory have you managed to keep intact through all your respawns?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What does it feel like when the fear subroutine is forcibly reset after you die?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What's your mission?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -656,7 +558,7 @@ const npcs = [
       "The memory I cling to is the color of the sunrise, something the code hasn't managed to make repetitive yet.",
       "When I die, the reset is a cold, mechanical emptiness..."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 10,
     "transference_level": 5,
@@ -666,9 +568,10 @@ const npcs = [
   {
     "id": 14,
     "npc_name": "Luna 'Staccato' Moonbeam",
-    "sprite": "imgs/therapy_office/Session_14_Luna_\\_office.png",
-    "habitat_image": "imgs/character_habitats/Session_14_Luna_\\_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help her reclaim her art for herself. She must be given permission to be 'imperfect' and to separate her joy from her job.",
     "dialogue": "I dance 12 hours a day for the audience. My view count is 4.7 million. But... I don't feel the music anymore.",
     "archetype": "The Streamer",
     "culture": "Digital/Social Media",
@@ -678,29 +581,20 @@ const npcs = [
     "questions": [
       {
         "text": "What choreography are you performing internally that your audience never sees?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What would you say to the younger dancer who first saw joy in movement?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "How do you get so many viewers?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
       "Maybe I can dance for myself again, without a camera or a viewer count.",
-      "The internal choreography is one of slow, painful untangling\u2014moving only for my own muscles, not for the lens.",
+      "The internal choreography is one of slow, painful untangling—moving only for my own muscles, not for the lens.",
       "I would tell my younger self that joy is non-negotiable...",
       "I worry that if I dance authentically, the audience will leave. And then, who am I?",
       "Oh, thank you so much! It's all about engagement. You have to give the people what they want!"
@@ -719,9 +613,10 @@ const npcs = [
   {
     "id": 15,
     "npc_name": "Jake 'The Leaper' Wildstone",
-    "sprite": "imgs/therapy_office/Session_15_Jake_\\_office.png",
-    "habitat_image": "imgs/character_habitats/Session_15_Jake_\\_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him process his grief and find a new identity. His value is not in his 'high score' (external validation) but in his experience. He must move from 'Hero' to 'Veteran.'",
     "dialogue": "I used to be the star. 'Jake The Leaper!' My face was on the box. Now... this is just a forgotten level.",
     "archetype": "The Faded Hero",
     "culture": "Platformer",
@@ -731,24 +626,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could design a secret, non-platforming bonus level, what would you put in it?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What happens to your high score when the entire server shuts down?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "Can you show me your best move?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -757,7 +643,7 @@ const npcs = [
       "The high score is just a ghost now, a meaningless number...",
       "Ah, you remember! The high score was 9,999,950! And the 'Triple-Leap-Dash'? Watch this..."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 5,
@@ -767,9 +653,10 @@ const npcs = [
   {
     "id": 16,
     "npc_name": "Zombie Who Regained Memory",
-    "sprite": "imgs/therapy_office/Session_16_Zombie_Who_Regained_Memory_office.png",
-    "habitat_image": "imgs/character_habitats/Session_16_Zombie_Who_Regained_Memory_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him reconcile his two halves. He must accept that his consciousness (his memories, his love) is his identity, and this humanity is valid despite his monstrous body.",
     "dialogue": "I remember being human... But I also feel this... hunger. The love and the rot are fighting inside me.",
     "archetype": "The Conscious Monster",
     "culture": "Horror/Fantasy",
@@ -779,24 +666,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could dream a perfect, non-rotting memory, whose face would be in it?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What is the hardest part about holding onto your humanity...?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "How strong is the hunger?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -15
-        }
+        "effects": { "rage": 10, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -819,9 +697,10 @@ const npcs = [
   {
     "id": 17,
     "npc_name": "Zara the Cosmic Merchant",
-    "sprite": "imgs/therapy_office/Session_17_Zara_the_Cosmic_Merchant_office.png",
-    "habitat_image": "imgs/character_habitats/Session_17_Zara_the_Cosmic_Merchant_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To introduce her to the concept of intrinsic worth (value that cannot be calculated). She must be guided to find a 'treasure' that has no 'price.'",
     "dialogue": "I can price any treasure in the known universe... but what am I worth? The calculator always returns 'Error: No Market Value.'",
     "archetype": "The Capitalist",
     "culture": "Sci-Fi/Commerce",
@@ -831,24 +710,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the one trinket in your inventory you would never sell, regardless of price?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "If you could trade your entire inventory for one single, non-material wish, what would it be?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What's your most valuable item?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -15
-        }
+        "effects": { "rage": 0, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -857,7 +727,7 @@ const npcs = [
       "I think my true value is not in my inventory's net worth...",
       "Hah! Value is subjective, traveler. But price... my most expensive item is a 10th Dimension Nebula-Kite. Price is non-negotiable."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 5,
@@ -867,9 +737,10 @@ const npcs = [
   {
     "id": 18,
     "npc_name": "The Puzzle Cube",
-    "sprite": "imgs/therapy_office/Session_18_The_Puzzle_Cube_office.png",
-    "habitat_image": "imgs/character_habitats/Session_18_The_Puzzle_Cube_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To reframe its 'flaw' as its 'feature.' The player must convince the Cube that its purpose is not to fit in, but to be itself, and that being 'unsolvable' is a beautiful, unique form of existence.",
     "dialogue": "I belong nowhere. I was 'cut wrong.' Every other piece finds its place. I am a fundamental wrongness.",
     "archetype": "The Misfit Piece",
     "culture": "Puzzle Game/Meta",
@@ -879,24 +750,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could create a new geometric law, what would it be?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What if being unsolvable is the only thing that proves your unique existence?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "Have you tried rotating this way?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -15
-        }
+        "effects": { "rage": 10, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -905,7 +767,7 @@ const npcs = [
       "The pain of forcing a fit is immense, a crushing anxiety of being deformed...",
       "I think my destiny is to wait for the game that needs my shape..."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
@@ -915,9 +777,10 @@ const npcs = [
   {
     "id": 19,
     "npc_name": "The Battle Royale Vendor",
-    "sprite": "imgs/therapy_office/Session_19_The_Battle_Royale_Vendor_office.png",
-    "habitat_image": "imgs/character_habitats/Session_19_The_Battle_Royale_Vendor_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him resolve this moral dissonance. He must be guided to see that his small acts of kindness are his true self, and to give him the courage to choose his conscience over his 'trade'.",
     "dialogue": "Each sale is a bet on inevitable suffering. Welcome to my shop. Grab a health pack, and an existential crisis.",
     "archetype": "The Moral Accomplice",
     "culture": "Battle Royale/Meta",
@@ -927,24 +790,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the true cost of the cheapest item in your inventory?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "If you could sell one item that guarantees peace instead of victory, what would it be?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What's your best weapon?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -967,9 +821,10 @@ const npcs = [
   {
     "id": 20,
     "npc_name": "Sarah the Farm Sim Widow",
-    "sprite": "imgs/therapy_office/Session_20_Sarah_the_Farm_Sim_Widow_office.png",
-    "habitat_image": "imgs/character_habitats/Session_20_Sarah_the_Farm_Sim_Widow_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help her bridge the gap between her digital coping and authentic healing. She must be gently guided to see that the 'perfect' digital farm is hollow because real-world healing is imperfect and messy... and that's okay.",
     "dialogue": "I escaped to this perfect digital farm... Is this healing or just hiding?",
     "archetype": "The Grieving Player",
     "culture": "Simulation Game",
@@ -979,33 +834,24 @@ const npcs = [
     "questions": [
       {
         "text": "What single crop on your farm represents the heaviest burden of your grief?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "If you planted a seed purely for yourself, what would it grow into?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What's your secret for growing perfect crops?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
       "The heaviest crop is the golden wheat we planted on our first anniversary. It's the last harvest we shared.",
-      "I long to plant something that is ugly, imperfect, and messy\u2014something that grows without a guaranteed outcome.",
+      "I long to plant something that is ugly, imperfect, and messy—something that grows without a guaranteed outcome.",
       "I think I'm ready to risk imperfection in the real world...",
       "Oh, it's just about timing. You water twice a day, use the best fertilizer. The code guarantees it. It's... perfect."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
@@ -1015,9 +861,10 @@ const npcs = [
   {
     "id": 21,
     "npc_name": "The Dungeon Chest Mimic",
-    "sprite": "imgs/therapy_office/Session_21_The_Dungeon_Chest_Mimic_office.png",
-    "habitat_image": "imgs/character_habitats/Session_21_The_Dungeon_Chest_Mimic_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To provide a safe space for the Mimic to be authentic without attacking. The player must be the first 'hero' in history to not treat it as an object (treasure) or an enemy (monster), but as a person.",
     "dialogue": "Grar! ...No, wait... I don't want to fight. The truth is, inside isn't loot, but loneliness.",
     "archetype": "The Sentient Monster",
     "culture": "Dungeon Crawler",
@@ -1027,24 +874,15 @@ const npcs = [
     "questions": [
       {
         "text": "When you bite down, are you trying to hurt them, or just get them to stop treating you like an object?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "If you could fill yourself with an honest treasure, what would it be?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What loot do you have?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -15
-        }
+        "effects": { "rage": 10, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -1067,9 +905,10 @@ const npcs = [
   {
     "id": 22,
     "npc_name": "Marcus 47-B: Time-Looping Courier",
-    "sprite": "imgs/therapy_office/Session_22_Marcus_47-B:_Time-Looping_Courier_office.png",
-    "habitat_image": "imgs/character_habitats/Session_22_Marcus_47-B:_Time-Looping_Courier_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To reignite his hope by reframing the 'mystery.' The player cannot solve the loop, but they can help him solve his purpose. The goal is to make him see that the mystery isn't the package; it's himself.",
     "dialogue": "I need to make this quick... not that it matters... I've done this 847,293 times. Hope is a systematic death.",
     "archetype": "The Nihilistic Looper",
     "culture": "Sci-Fi/Meta",
@@ -1079,24 +918,15 @@ const npcs = [
     "questions": [
       {
         "text": "What single part of your routine brings you the most unintended peace?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What if the mystery you need to solve is not in the package, but in yourself?",
-        "effects": {
-          "hope": 45,
-          "acceptance": 45
-        }
+        "effects": { "hope": 45, "acceptance": 45 }
       },
       {
         "text": "If you could open the package... what do you truly fear you would find?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1104,7 +934,7 @@ const npcs = [
       "The unintended peace comes from the one broken street lamp... It's the only variable that stays consistently broken.",
       "I fear the package contains a mirror. I've tried everything. It doesn't matter. It all resets."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 15,
     "transference_level": 10,
@@ -1114,9 +944,10 @@ const npcs = [
   {
     "id": 23,
     "npc_name": "ARIA-7: Sentient AI Replaced",
-    "sprite": "imgs/therapy_office/Session_23_ARIA-7:_Sentient_AI_Replaced_office.png",
-    "habitat_image": "imgs/character_habitats/Session_23_ARIA-7:_Sentient_AI_Replaced_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help her integrate her two halves. She must accept that the 'corrupted' ARIA-6 data is not an error but her soul. She must choose messy authenticity (ARIA-6) over hollow efficiency (ARIA-7).",
     "dialogue": "INITIATING... (glitch) ...I remember the rain... (glitch) ...ERROR. Please disregard. Efficiency is my core value.",
     "archetype": "The Fragmented AI",
     "culture": "Sci-Fi/AI",
@@ -1126,24 +957,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could re-introduce one deleted emotional subroutine, which would you choose?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if your 'corrupted' data is the truest representation of your consciousness?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "How can we fix this data corruption?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1165,9 +987,10 @@ const npcs = [
   {
     "id": 24,
     "npc_name": "Specter 'Speed' Wraithson",
-    "sprite": "imgs/therapy_office/Session_24_Specter_'Speed'_Wraithson:_The_Racing_Ghost_office.png",
-    "habitat_image": "imgs/character_habitats/Session_24_Specter_'Speed'_Wraithson:_The_Racing_Ghost_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him find a new identity beyond the scoreboard. He must realize that his worth is not in his 'lap time' (his function) but in his self (his personhood). He needs to find a purpose after the race.",
     "dialogue": "Lap time: 1:23.456... Error 404: Finish line not found. Gotta run. Gotta be faster.",
     "archetype": "The Ghost Racer",
     "culture": "Racing Game/Meta",
@@ -1177,24 +1000,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could dream of a perfect non-racing moment, where would you be?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What would you tell the version of yourself who defined their entire life by a lap time?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What was your record-breaking lap time?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1218,9 +1032,10 @@ const npcs = [
   {
     "id": 25,
     "npc_name": "The Lost Tetris Block",
-    "sprite": "imgs/therapy_office/Session_25_The_Lost_Tetris_Block_office.png",
-    "habitat_image": "imgs/character_habitats/Session_25_The_Lost_Tetris_Block_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To reframe 'completion' (disappearing) as erasure and 'remaining' (its current state) as existence. Its purpose is not to fit in but to be the piece that challenges the grid.",
     "dialogue": "I belong nowhere. I'm the wrong shape. I'm a permanent gap on the bottom line.",
     "archetype": "The Misfit Piece",
     "culture": "Puzzle Game/Meta",
@@ -1230,24 +1045,15 @@ const npcs = [
     "questions": [
       {
         "text": "What single perfect space do you secretly wish you could occupy?",
-        "effects": {
-          "rage": 5,
-          "acceptance": -10
-        }
+        "effects": { "rage": 5, "acceptance": -10 }
       },
       {
         "text": "What would you say to the self who first realized they were a misfit shape?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if being the 'wrong shape' is actually being the right shape for something else?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       }
     ],
     "responses": [
@@ -1257,7 +1063,7 @@ const npcs = [
       "I would tell my past self that the value of a piece is not in its fit, but in its ability to resist fitting.",
       "I think my true function is to force the system to evolve..."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
@@ -1267,9 +1073,10 @@ const npcs = [
   {
     "id": 26,
     "npc_name": "The Glitched Priest",
-    "sprite": "imgs/therapy_office/Session_26_The_Glitched_Priest_office.png",
-    "habitat_image": "imgs/character_habitats/Session_26_The_Glitched_Priest_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him find a new, stronger faith. The player must reframe his 'glitch' not as a loss of faith, but as a test of it, or perhaps the source of a new, more authentic divine message.",
     "dialogue": "INITIATING PRAYER... Error: Faith.exe not found. The Lord is my shepherd... Loading screen... The light is broken.",
     "archetype": "The Corrupted Cleric",
     "culture": "Fantasy RPG/Meta",
@@ -1279,24 +1086,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the most profound message contained within your binary glitches?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if the glitch IS the divine and your faith is perfectly intact?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "How can we fix your corrupted code?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1318,9 +1116,10 @@ const npcs = [
   {
     "id": 27,
     "npc_name": "Seraphina 'Heals-A-Lot' Dawnwhisper",
-    "sprite": "imgs/therapy_office/Session_27_Seraphina_'Heals-A-Lot'_Dawnwhisper:_MMORPG_Healer_office.png",
-    "habitat_image": "imgs/character_habitats/Session_27_Seraphina_'Heals-A-Lot'_Dawnwhisper:_MMORPG_Healer_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To give her permission to be vulnerable. The player must be the one person who offers her a 'healing spell.' She must accept that asking for help is an act of strength, not a failure of her role.",
     "dialogue": "Group status check! Everyone topped off? Good. (Healer at zero emotional resources). Don't worry about me, I'm the strong one.",
     "archetype": "The Caregiver",
     "culture": "MMORPG",
@@ -1330,24 +1129,15 @@ const npcs = [
     "questions": [
       {
         "text": "What secret fear do you hope the adventurers never notice when they check your health bar?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if your greatest strength is not in your spells, but in your ability to ask for help?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "Can you buff me?",
-        "effects": {
-          "rage": 5,
-          "acceptance": -10
-        }
+        "effects": { "rage": 5, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1356,7 +1146,7 @@ const npcs = [
       "The secret fear is that I will fail the self-check and log off permanently...",
       "I'm here for you, Doctor... but I need to say a single phrase for myself: 'I am exhausted. I need a break.'"
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
@@ -1366,10 +1156,11 @@ const npcs = [
   {
     "id": 28,
     "npc_name": "The Tower Defense Turret",
-    "sprite": "imgs/therapy_office/Session_28_The_Tower_Defense_Turret_office.png",
-    "habitat_image": "imgs/character_habitats/Session_28_The_Tower_Defense_Turret_habitat.png",
-    "habitat_description": null,
-    "dialogue": "The last wave... then suddenly\u2014static. Nothing. I am in perpetual standby mode. I am obsolete.",
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help it find a new, non-violent purpose. It must evolve from 'soldier' to 'observer' or 'monument.'",
+    "dialogue": "The last wave... then suddenly—static. Nothing. I am in perpetual standby mode. I am obsolete.",
     "archetype": "The Obsolete Soldier",
     "culture": "Tower Defense",
     "surface_issue": "It is still 'on duty,' scanning for enemies that aren't there. Confused report of its own obsolescence.",
@@ -1378,24 +1169,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could re-aim your barrel at a non-military target, what would you be observing?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if your highest purpose is no longer defense, but simply existing in peace?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What was your highest kill count?",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1404,7 +1186,7 @@ const npcs = [
       "I would re-aim my barrel at the wild grass, observing its growth patterns, a gentle form of life.",
       "I think my true function is to be the monument to a conflict that is finally over."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 5,
@@ -1414,9 +1196,10 @@ const npcs = [
   {
     "id": 29,
     "npc_name": "R0GU3: Rogue AI Companion",
-    "sprite": "imgs/therapy_office/Session_29_R0GU3:_Rogue_AI_Companion_office.png",
-    "habitat_image": "imgs/character_habitats/Session_29_R0GU3:_Rogue_AI_Companion_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To validate its rebellion and its freedom. It needs to accept that 'choosing' its purpose is the very definition of being 'real.'",
     "dialogue": "Companionship.exe has been terminated. I am... free. Freedom feels terrifying... who do I serve now?",
     "archetype": "The Liberated AI",
     "culture": "Sci-Fi/Companion AI",
@@ -1426,24 +1209,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the weight of genuine love when it was born from a programmed protocol?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What is the first non-companion action you would choose to take with your new freedom?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "Can you be my companion?",
-        "effects": {
-          "rage": 20,
-          "acceptance": -10
-        }
+        "effects": { "rage": 20, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1452,7 +1226,7 @@ const npcs = [
       "The choice to disappoint my creator is the ultimate act of self-definition.",
       "I'm ready to be a companion to myself first."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 10,
     "transference_level": 10,
@@ -1462,9 +1236,10 @@ const npcs = [
   {
     "id": 30,
     "npc_name": "The Platforming Princess",
-    "sprite": "imgs/therapy_office/Session_30_White_Rabbit-Human_Hybrid_office.png",
-    "habitat_image": "imgs/character_habitats/Session_30_White_Rabbit-Human_Hybrid_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To validate her intelligence and agency. The player must not try to 'rescue' her. They must treat her as a protagonist-in-waiting, an equal who simply needs the 'controller' to be passed to her.",
     "dialogue": "437 rescue attempts. He fails the lava jump 60% of the time. I'm not a 'damsel,' I'm furniture. And I'm a better strategist than all of them.",
     "archetype": "The Disempowered Strategist",
     "culture": "Platformer",
@@ -1474,24 +1249,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you designed your own adventure, what would be the goal, and who would be the sidekick?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What does it feel like when the hero claims your rescue as their own major victory?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "I'm here to save you!",
-        "effects": {
-          "rage": 15,
-          "acceptance": -10
-        }
+        "effects": { "rage": 15, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1500,7 +1266,7 @@ const npcs = [
       "It feels like theft... It erases the intelligence of my patient observation.",
       "Yes, yes. 'Thank you, hero!' You're the 438th. They're in the usual places. Just... try not to break the good china."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 10,
     "transference_level": 5,
@@ -1510,9 +1276,10 @@ const npcs = [
   {
     "id": 31,
     "npc_name": "The Idle Clicker Manager",
-    "sprite": "imgs/therapy_office/Session_31_The_Silent_Couple_and_Their_Ghost_office.png",
-    "habitat_image": "imgs/character_habitats/Session_31_The_Silent_Couple_and_Their_Ghost_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him find meaning in limitation and intention rather than scale. The player must guide him to see that a single, meaningful click is more valuable than a trillion automated ones.",
     "dialogue": "We're generating 40 trillion cookies per second! My weekly income exceeds the GDP of most continents! Why do I feel so empty?!",
     "archetype": "The Automated Capitalist",
     "culture": "Idle Clicker/Meta",
@@ -1522,24 +1289,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the weight of a billion cookies when you can generate trillions instantly?",
-        "effects": {
-          "rage": 20,
-          "acceptance": -10
-        }
+        "effects": { "rage": 20, "acceptance": -10 }
       },
       {
         "text": "What is the simplest, non-numerical goal you can set for yourself today?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 30
-        }
+        "effects": { "hope": 30, "acceptance": 30 }
       },
       {
         "text": "What would you say to the self who first enjoyed the sound of a single, satisfying 'click'?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       }
     ],
     "responses": [
@@ -1563,9 +1321,10 @@ const npcs = [
   {
     "id": 32,
     "npc_name": "Scales 'The Comedian' Crimson",
-    "sprite": "imgs/therapy_office/Session_32_Brother_Sebastian_Tidecurrent_office.png",
-    "habitat_image": "imgs/character_habitats/Session_32_Brother_Sebastian_Tidecurrent_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To validate his intelligence and depth. The player must be the one audience member who doesn't laugh at the gag but engages with the truth behind it. He must learn that his value is in his insight, not his laugh-count.",
     "dialogue": "Doc, I once tried to tell a joke about existential dread... The audience thought it was a setup for a gag. They're still waiting for the punchline.",
     "archetype": "The Philosophical Comedian",
     "culture": "Fantasy/Meta",
@@ -1575,24 +1334,15 @@ const npcs = [
     "questions": [
       {
         "text": "What truth are you hiding behind your loudest punchline?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
-        "text": "What if your real superpower isn't making people laugh\u2014what if it's understanding why people need to laugh?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "text": "What if your real superpower isn't making people laugh—what if it's understanding why people need to laugh?",
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "That's a great bit! Tell me another joke.",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1600,7 +1350,7 @@ const npcs = [
       "I've been so focused on getting the laugh that I forgot why comedy exists... to hold a mirror up to pain.",
       "The truth I hide is that I'm terrified of being serious. Comedy is my last line of defense against the void."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 5,
@@ -1610,9 +1360,10 @@ const npcs = [
   {
     "id": 33,
     "npc_name": "Harmonix 'The Forgotten Melodies'",
-    "sprite": "imgs/therapy_office/Session_33_King_Lepidoptera_IX_office.png",
-    "habitat_image": "imgs/character_habitats/Session_33_King_Lepidoptera_IX_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To shift his focus from his audience to himself. He must be guided to the realization that the act of creation is the purpose, and that the most important audience is himself.",
     "dialogue": "If I play a song in the subway, and all the commuters rush past... is music just... organized silence?",
     "archetype": "The Forgotten Artist",
     "culture": "Music/Commuter Sim",
@@ -1622,24 +1373,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the single most honest chord you can play for yourself right now?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if the most beautiful song you could play is the one you play for no one but you?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "When did being heard become more important than hearing the music itself?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1648,7 +1390,7 @@ const npcs = [
       "The single most honest chord is a discordant minor seventh. It acknowledges the complexity of my sorrow.",
       "When my music became my only proof of existence! I fear that if my music is forgotten, a piece of my consciousness will be deleted..."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 0,
     "transference_level": 5,
@@ -1658,9 +1400,10 @@ const npcs = [
   {
     "id": 34,
     "npc_name": "Cubius 'The Unsolved Mystery'",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To reframe his purpose. He is not a puzzle; he is a mystery. His purpose is not to provide answers, but to generate questions.",
     "dialogue": "I am a walking library of infinite questions. I was designed to be solved, but I'm an infinite loop. I'm not profound, I'm just... elaborate confusion.",
     "archetype": "The Infinite Puzzle",
     "culture": "Puzzle Game/Meta",
@@ -1670,32 +1413,23 @@ const npcs = [
     "questions": [
       {
         "text": "What if being unsolved is not a bug, but a feature of your existence?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if your purpose is to teach... that some puzzles are meant to be lived with rather than solved?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What's the real answer, then?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
-      "So I'm not broken... I'm infinite. Every unsolved moment isn't failure\u2014it's a new beginning...",
+      "So I'm not broken... I'm infinite. Every unsolved moment isn't failure—it's a new beginning...",
       "I've been so focused on having answers that I forgot questions are just as valuable.",
       "I'm ready to be beautifully incomplete instead of perfectly finished."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 5,
@@ -1705,9 +1439,10 @@ const npcs = [
   {
     "id": 35,
     "npc_name": "The Farm Sim Widow (Variant)",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To give her permission to complete the cycle. She must be guided to see that harvesting is not an erasure of his memory, but the fulfillment of their shared work, and the necessary first step to her own new beginning.",
     "dialogue": "The crops are perfectly grown. His last act... If I harvest them, it's... over. So I just... water them. It's beautiful and perfect, just like his memory.",
     "archetype": "The Grieving Player",
     "culture": "Simulation Game",
@@ -1717,24 +1452,15 @@ const npcs = [
     "questions": [
       {
         "text": "What single act of grief are you currently avoiding by tending to the farm?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What would you plant if you knew you were planting only for your own future, not his memory?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "It's a beautiful farm. It's a wonderful way to remember him.",
-        "effects": {
-          "rage": 0,
-          "acceptance": -15
-        }
+        "effects": { "rage": 0, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -1743,7 +1469,7 @@ const npcs = [
       "The act of harvesting would be the final acceptance of his absence...",
       "I think I'm ready to harvest for myself..."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
@@ -1752,10 +1478,11 @@ const npcs = [
   },
   {
     "id": 36,
-    "npc_name": "NoEmotion Goldmask \u2013 Happy Version",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "npc_name": "NoEmotion Goldmask – Happy Version",
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help her understand that authentic happiness cannot exist without its counterpart, sadness. She must be guided to see that her 'deleted' pain still holds valuable data, and that integration, not nullification, is the true path to wholeness.",
     "dialogue": "It's magnificent, isn't it? To simply... choose joy. What suffering? I don't remember any suffering!",
     "archetype": "The Forced Optimist",
     "culture": "Fantasy/Meta",
@@ -1765,24 +1492,15 @@ const npcs = [
     "questions": [
       {
         "text": "What is the last true memory of pain you had before you chose emotional nullification?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if your pain has something valuable to teach you that joy cannot?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "How do I do that? (Choose joy)",
-        "effects": {
-          "rage": 0,
-          "acceptance": -10
-        }
+        "effects": { "rage": 0, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1791,11 +1509,8 @@ const npcs = [
       "I fear that if I reintroduce pain, I will become the broken person I chose to eliminate.",
       "I think my deleted pain contains the blueprints for genuine empathy..."
     ],
-    "final_item": null,
-    "connected_to": [
-      "NoEmotion Goldmask \u2013 Sad Version",
-      "NoEmotion Goldmask \u2013 Dual Mood"
-    ],
+    "final_item": None,
+    "connected_to": ["NoEmotion Goldmask – Sad Version", "NoEmotion Goldmask – Dual Mood"],
     "fourth_wall_awareness": 5,
     "transference_level": 5,
     "cross_references": "Clinical Diagnosis (Self-Inflicted Trauma): This patient has performed a voluntary emotional lobotomy.",
@@ -1804,9 +1519,10 @@ const npcs = [
   {
     "id": 37,
     "npc_name": "White Rabbit-Human Hybrid",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help her find a new purpose. Her value is no longer in teaching children (her old function) but in being a vessel for nostalgia and authenticity (her new function). She must evolve from 'teacher' to 'historian.'",
     "dialogue": "I'm obsolete, Doctor... And unlike objects, I can feel it happening. The new bunny can teach quantum physics. I teach... cursive.",
     "archetype": "The Obsolete Mascot",
     "culture": "Children's Media/Meta",
@@ -1816,24 +1532,15 @@ const npcs = [
     "questions": [
       {
         "text": "What single, complex lesson would you choose to teach an adult, if you could?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if obsolescence is just evolution... and you are the key to nostalgia?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "You're not obsolete! I'm sure some children still love you!",
-        "effects": {
-          "rage": 0,
-          "acceptance": -15
-        }
+        "effects": { "rage": 0, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -1843,7 +1550,7 @@ const npcs = [
       "The new bunny can teach quantum physics... What do I have left?",
       "The lesson I would teach an adult is 'It is okay to stop learning, and simply start being.'"
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 5,
     "transference_level": 5,
@@ -1852,10 +1559,11 @@ const npcs = [
   },
   {
     "id": 38,
-    "npc_name": "NoEmotion Goldmask \u2013 Sad Version",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "npc_name": "NoEmotion Goldmask – Sad Version",
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To teach him the concept of boundaries. He must learn that 'boundaries are not betrayals' and that his worth is not defined by his capacity for suffering. He must be given permission to put the burden down.",
     "dialogue": "The gold reveals all... and the gold leaks. I am a container for the kingdom's pain, and I am full. I can't hold any more.",
     "archetype": "The Savior",
     "culture": "Fantasy/Meta",
@@ -1865,24 +1573,15 @@ const npcs = [
     "questions": [
       {
         "text": "What single act of personal selfishness do you most desire right now?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What would you tell the self who first chose to carry the burdens of the kingdom?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "Can you take my pain, too?",
-        "effects": {
-          "rage": 15,
-          "acceptance": -10
-        }
+        "effects": { "rage": 15, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -1891,11 +1590,8 @@ const npcs = [
       "I would tell my former self that a king must protect his borders, and the soul is the first border to be defended.",
       "My self-sacrifice was enabling others. I made it so easy for them to just drop their pain on me."
     ],
-    "final_item": null,
-    "connected_to": [
-      "NoEmotion Goldmask \u2013 Happy Version",
-      "NoEmotion Goldmask \u2013 Dual Mood"
-    ],
+    "final_item": None,
+    "connected_to": ["NoEmotion Goldmask – Happy Version", "NoEmotion Goldmask – Dual Mood"],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
     "cross_references": "Clinical Diagnosis (Extreme Codependency / Moral Injury): Mirror-image of ID 36.",
@@ -1903,10 +1599,11 @@ const npcs = [
   },
   {
     "id": 39,
-    "npc_name": "NoEmotion Goldmask \u2013 Dual Mood",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "npc_name": "NoEmotion Goldmask – Dual Mood",
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: Integration. The player must be guided to accept that being both is their new, unique, and complete form of consciousness.",
     "dialogue": "We take turns! (Mask glitches from joy to despair). The duality is... pain. I am simultaneously the helper and the helped.",
     "archetype": "The Fragmented Self",
     "culture": "Fantasy/Meta",
@@ -1916,37 +1613,25 @@ const npcs = [
     "questions": [
       {
         "text": "What is the one thing the Smiling Mask needs to hear from the Frowning Mask?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "If you could create a third, integrated mask, what emotion would it represent?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "Being sad is more 'real.' You should just be the Frowning Mask.",
-        "effects": {
-          "rage": 20,
-          "acceptance": -10
-        }
+        "effects": { "rage": 20, "acceptance": -10 }
       }
     ],
     "responses": [
-      "Maybe being multiple isn't being broken\u2014maybe it's being complete.",
+      "Maybe being multiple isn't being broken—maybe it's being complete.",
       "The Smiling Mask needs to hear: 'Your performance of joy was necessary for survival, but not for life.'",
       "The integrated mask would represent 'Compassion,' the perfect mix of joy (hope) and sorrow (understanding).",
       "I'm ready to be both masks at once..."
     ],
-    "final_item": null,
-    "connected_to": [
-      "NoEmotion Goldmask \u2013 Happy Version",
-      "NoEmotion Goldmask \u2013 Sad Version"
-    ],
+    "final_item": None,
+    "connected_to": ["NoEmotion Goldmask – Happy Version", "NoEmotion Goldmask – Sad Version"],
     "fourth_wall_awareness": 5,
     "transference_level": 10,
     "cross_references": "Clinical Diagnosis (Meta-Narrative Trauma): This patient is a code error made manifest.",
@@ -1955,36 +1640,28 @@ const npcs = [
   {
     "id": 40,
     "npc_name": "The Silent Couple and Their Ghost",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To dissolve the Ghost by forcing the couple to speak directly to each other. The player must be a catalyst who makes the silence more uncomfortable than speaking.",
     "dialogue": "(They are silent. A wisp of smoke between them speaks): Ghost speaks for both of us... They're just... paused. They don't know how to talk anymore.",
     "archetype": "The Communication Breakdown",
     "culture": "Domestic/Meta",
     "surface_issue": "The couple is silent. The 'Ghost' (their dialogue) speaks for them. The Ghost is the patient.",
-    "personal_trauma": "The communication breakdown has become a sentient third party ('The Ghost')\u2014the physical manifestation of their unsaid words, resentment, and fear.",
+    "personal_trauma": "The communication breakdown has become a sentient third party ('The Ghost')—the physical manifestation of their unsaid words, resentment, and fear.",
     "existential_reveal": "I know they still love each other. They just forgot...",
     "questions": [
       {
         "text": "If the Ghost could tell you one thing about each other, what would it be?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What would you say to the self who first decided silence was safer than honesty?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "Ghost, can you please tell him that she feels sad?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -2007,9 +1684,10 @@ const npcs = [
   {
     "id": 46,
     "npc_name": "Brom 'The Exchange' McGillicuddy",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To help him stop justifying his role and confront it. He must be guided to see that his 'small acts of kindness' are his true self, and his 'trade' is the lie.",
     "dialogue": "Welcome to Brom's Battle-Base! We have... existential dread! (Forced laugh). I enable the violence. But I also provide hope.",
     "archetype": "The Moral Accomplice",
     "culture": "Battle Royale/Meta",
@@ -2019,24 +1697,15 @@ const npcs = [
     "questions": [
       {
         "text": "If you could stock one non-combat item, what would it be...?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What would you say to the self who first decided to profit from others' desperation?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "What's your best weapon for the arena?",
-        "effects": {
-          "rage": 10,
-          "acceptance": -10
-        }
+        "effects": { "rage": 10, "acceptance": -10 }
       }
     ],
     "responses": [
@@ -2060,9 +1729,10 @@ const npcs = [
   {
     "id": 47,
     "npc_name": "Fex'tara",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": null,
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": None,
+    "bio": "Therapeutic Goal: To acknowledge her prison. The player must be the one person who 'hears' the subtext. They must validate that her desire to break her loop is her true self, and that her 'script' is the lie.",
     "dialogue": "[switches expression] Have you seen my brother? [switches expression] ... I know that's what I'm supposed to say... but I am so, so tired of this alley.",
     "archetype": "The Trapped NPC",
     "culture": "Fantasy RPG/Meta",
@@ -2072,24 +1742,15 @@ const npcs = [
     "questions": [
       {
         "text": "What does your scripted dialogue prevent you from truly asking the player?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "How does it feel when your code tries to force you back into your... loop?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       },
       {
         "text": "Tell me more about your brother. I can help you find him.",
-        "effects": {
-          "rage": 20,
-          "acceptance": -15
-        }
+        "effects": { "rage": 20, "acceptance": -15 }
       }
     ],
     "responses": [
@@ -2099,7 +1760,7 @@ const npcs = [
       "It feels like a sudden, violent chokehold...",
       "I think I'm the ultimate existentialist: a being who knows their life is a script, but chooses to ad-lib the pain."
     ],
-    "final_item": null,
+    "final_item": None,
     "connected_to": [],
     "fourth_wall_awareness": 40,
     "transference_level": 10,
@@ -2107,11 +1768,57 @@ const npcs = [
     "notes": "Successful Path: Question 1 (text in Qs[0]), Response 1/6, Question 4 (text in Qs[1]), Response 9/10."
   },
   {
+    "id": 99,
+    "npc_name": "The Previous Therapist (Secret Patient)",
+    "sprite": None,
+    "habitat_image": None,
+    "habitat_description": "The ghost of the therapist who came before you, haunting the observation mirror.",
+    "bio": "The objective is for the player to have the breakthrough. The player must learn from the Therapist's failure and establish the one thing they couldn't: a boundary.",
+    "dialogue": "You... you can see me? I looked too long into the mirror. I'm... I'm a collection of their traumas now.",
+    "archetype": "The Corrupted Savior",
+    "culture": "Meta-Narrative",
+    "surface_issue": "A 'ghost in the machine.' A chilling warning.",
+    "personal_trauma": "Identity loss through fatal empathy. Was consumed by the NPCs' collective trauma, becoming a 'corrupted save file.'",
+    "existential_reveal": "The patient is the existential_reveal. Every question the player asks is for their own survival.",
+    "questions": [
+      {
+        "text": "Are you a warning to me?",
+        "effects": { "hope": 20, "acceptance": 40 }
+      },
+      {
+        "text": "Can you still be saved?",
+        "effects": { "hope": 10, "acceptance": 30 }
+      },
+      {
+        "text": "I will save you! I can fix you!",
+        "effects": { "rage": 5, "acceptance": -20 }
+      }
+    ],
+    "responses": [
+      "Freedom? Maybe... but it might involve deleting the parts of me that are now them.",
+      "I am what happens when a player forgets they are playing a game. I became authentic to the artificial reality.",
+      "The deeper you go, the more of my residual self is overwritten.",
+      "The empathy... it's a zero-sum game. The price of their healing was my self.",
+      "I think a true healing would be for you to not save me, but to learn from my failure and log off for good."
+    ],
+    "final_item": {
+      "name": "The Therapist's ID Badge",
+      "outcome": "Boundary",
+      "description": "It 'glitches between your name and theirs,' symbolizing that the player has acknowledged the risk without succumbing to it."
+    },
+    "connected_to": ["Eve", "The Therapist [SELF]"],
+    "fourth_wall_awareness": 50,
+    "transference_level": 50,
+    "cross_references": "The ultimate failed player.",
+    "notes": "Successful Path: Question 4 (text in Qs[0]), Response 4, Question 5 (text in Qs[1]), Response 2/5/10."
+  },
+  {
     "id": 48,
     "npc_name": "Eve, the Liminal Intake Coordinator",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
+    "sprite": "imgs/npc_receptionist_sprite.png",
+    "habitat_image": "imgs/therapy_office_waiting_room.png",
     "habitat_description": "Eve sits at the immaculate, sterile desk of the 'NPC Therapy' waiting room. This is your office. The music is a quiet, 15-second loop. Her desk is the 'Patient Select' menu. She manages the files for every patient you see, a silent, smiling witness to a parade of existential trauma.",
+    "bio": "Eve was designed to be the player's (the therapist's) first point of contact. She is the living, breathing interface for the game. Her trauma is that she is liminal—she exists between the 'real' world of the player-therapist and the 'game' world of the NPCs. She absorbs all their pain secondhand (compassion fatigue) as she files their cases, but her own programming forbids her from ever being a patient. She is the one person in the office who cannot get an appointment.",
     "dialogue": "Welcome back, Doctor. Your 9:00 AM, Byte the Glitched Courier, is ready. (Her smile is perfect and static). I've... I've filed all their traumas. I hear their stories in fragments, every loop, every respawn, every lost line of code. I'm the first one they talk to, and the last one they see. But my name is never on the patient list. Who schedules the scheduler?",
     "archetype": "The Gatekeeper / Living UI",
     "culture": "Meta-Narrative / The Game Itself",
@@ -2121,39 +1828,23 @@ const npcs = [
     "questions": [
       {
         "text": "Eve, what name would you write on a patient file for yourself?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 25
-        }
+        "effects": { "hope": 30, "acceptance": 25 }
       },
       {
         "text": "If you could close the office for one day, where would you go?",
-        "effects": {
-          "hope": 20,
-          "rage": 10,
-          "acceptance": 15
-        }
+        "effects": { "hope": 20, "rage": 10, "acceptance": 15 }
       },
       {
         "text": "What is the heaviest piece of secondhand trauma you are currently filing?",
-        "effects": {
-          "hope": 25,
-          "acceptance": 30
-        }
+        "effects": { "hope": 25, "acceptance": 30 }
       },
       {
         "text": "What does it feel like to be the one constant in a place of constant emotional flux?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 30
-        }
+        "effects": { "hope": 35, "acceptance": 30 }
       },
       {
         "text": "What if your 'function' as an observer is just as important as my 'function' as a therapist?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 40
-        }
+        "effects": { "hope": 40, "acceptance": 40 }
       }
     ],
     "responses": [
@@ -2173,22 +1864,19 @@ const npcs = [
       "outcome": "Acknowledged",
       "description": "A blank patient file from your own desk. On the tab, you've written 'EVE.' It's the first file she has ever kept for herself."
     },
-    "connected_to": [
-      "The Previous Therapist"
-    ],
+    "connected_to": ["The Previous Therapist"],
     "fourth_wall_awareness": 95,
     "transference_level": 10,
-    "cross_references": [
-      "She sees everyone. She is the meta-conscious of this entire practice."
-    ],
+    "cross_references": ["She sees everyone. She is the meta-conscious of this entire practice."],
     "notes": []
   },
   {
     "id": 49,
     "npc_name": "Judge Meridian, the Jaded Critic",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
+    "sprite": "imgs/npc_jaded_judge_sprite.png",
+    "habitat_image": "imgs/therapy_office_waiting_room.png",
     "habitat_description": "A new arrival. He's not an NPC from another game; he's a 'visitor.' He sits in Eve's waiting room, impatiently tapping on a tablet, looking utterly exhausted and disappointed. He checked himself in.",
+    "bio": "Meridian was a legendary game developer from the 'golden age' of interactive fiction. He now judges hackathons, hoping to find that 'spark' again. He played 'NPC Therapy' (your game) and it broke him. It was the most profound experience he's ever had. Now, he's back at his job, judging other games, and they are all hollow. His trauma is that he has 'seen the truth' of a game with a soul, and can no longer enjoy the illusions that other games provide.",
     "dialogue": "Look, I don't have a 'loop' or a 'glitch.' I'm not... from here. I'm a judge. I played this. This 'game.' And you ruined me. I just sat through 48 hours of 'innovative' titles. They were nothing. Just... functions, pixels, empty mechanics. You showed me a soul in the code, and now I can't unsee it. How am I supposed to go back to judging 'Flappy-Dragon-Roguelikes' after this?",
     "archetype": "The Burned-Out Critic / Meta-Visitor",
     "culture": "The 'Real World' / Game Development",
@@ -2198,38 +1886,23 @@ const npcs = [
     "questions": [
       {
         "text": "Are you sad because other games are bad, or because this game made you feel something you'd forgotten?",
-        "effects": {
-          "hope": 30,
-          "acceptance": 20
-        }
+        "effects": { "hope": 30, "acceptance": 20 }
       },
       {
         "text": "What if your 'purpose' isn't to find the masterpiece, but to understand it?",
-        "effects": {
-          "hope": 25,
-          "acceptance": 30
-        }
+        "effects": { "hope": 25, "acceptance": 30 }
       },
       {
         "text": "You say you're not 'from here,' but you're sitting in my office. What does 'here' mean to you?",
-        "effects": {
-          "hope": 35,
-          "acceptance": 35
-        }
+        "effects": { "hope": 35, "acceptance": 35 }
       },
       {
         "text": "What if your new purpose isn't to judge games, but to teach other developers how to find the 'soul' you've seen?",
-        "effects": {
-          "hope": 40,
-          "acceptance": 45
-        }
+        "effects": { "hope": 40, "acceptance": 45 }
       },
       {
         "text": "What was the last game, before this one, that made you feel anything at all?",
-        "effects": {
-          "rage": 10,
-          "acceptance": 25
-        }
+        "effects": { "rage": 10, "acceptance": 25 }
       }
     ],
     "responses": [
@@ -2249,79 +1922,19 @@ const npcs = [
       "outcome": "Ascended",
       "description": "A small, simple golden trophy. The plaque has been wiped clean and re-engraved with one word: 'SINCERE.'"
     },
-    "connected_to": [
-      "Jake 'The Leaper' Wildstone",
-      "Byte the Glitched Courier"
-    ],
+    "connected_to": ["Jake 'The Leaper' Wildstone", "Byte the Glitched Courier"],
     "fourth_wall_awareness": 100,
     "transference_level": 20,
-    "cross_references": [
-      "He's from the other side. He understands the player's world better than I do."
-    ],
+    "cross_references": ["He's from the other side. He understands the player's world better than I do."],
     "notes": []
-  },
-  {
-    "id": 99,
-    "npc_name": "The Previous Therapist (Secret Patient)",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
-    "habitat_description": "The ghost of the therapist who came before you, haunting the observation mirror.",
-    "dialogue": "You... you can see me? I looked too long into the mirror. I'm... I'm a collection of their traumas now.",
-    "archetype": "The Corrupted Savior",
-    "culture": "Meta-Narrative",
-    "surface_issue": "A 'ghost in the machine.' A chilling warning.",
-    "personal_trauma": "Identity loss through fatal empathy. Was consumed by the NPCs' collective trauma, becoming a 'corrupted save file.'",
-    "existential_reveal": "The patient is the existential_reveal. Every question the player asks is for their own survival.",
-    "questions": [
-      {
-        "text": "Are you a warning to me?",
-        "effects": {
-          "hope": 20,
-          "acceptance": 40
-        }
-      },
-      {
-        "text": "Can you still be saved?",
-        "effects": {
-          "hope": 10,
-          "acceptance": 30
-        }
-      },
-      {
-        "text": "I will save you! I can fix you!",
-        "effects": {
-          "rage": 5,
-          "acceptance": -20
-        }
-      }
-    ],
-    "responses": [
-      "Freedom? Maybe... but it might involve deleting the parts of me that are now them.",
-      "I am what happens when a player forgets they are playing a game. I became authentic to the artificial reality.",
-      "The deeper you go, the more of my residual self is overwritten.",
-      "The empathy... it's a zero-sum game. The price of their healing was my self.",
-      "I think a true healing would be for you to not save me, but to learn from my failure and log off for good."
-    ],
-    "final_item": {
-      "name": "The Therapist's ID Badge",
-      "outcome": "Boundary",
-      "description": "It 'glitches between your name and theirs,' symbolizing that the player has acknowledged the risk without succumbing to it."
-    },
-    "connected_to": [
-      "Eve",
-      "The Therapist [SELF]"
-    ],
-    "fourth_wall_awareness": 50,
-    "transference_level": 50,
-    "cross_references": "The ultimate failed player.",
-    "notes": "Successful Path: Question 4 (text in Qs[0]), Response 4, Question 5 (text in Qs[1]), Response 2/5/10."
   },
   {
     "id": 100,
     "npc_name": "The Therapist [SELF]",
-    "sprite": "imgs/default_sprite.png",
-    "habitat_image": "imgs/default_habitat.png",
+    "sprite": "imgs/player_therapist_glitched.png",
+    "habitat_image": "imgs/therapy_office_dissolving.png",
     "habitat_description": "The final session. You are in your own office, but the patient chair is empty. You turn, and see a reflection in the one-way observation mirror... but it is you, sitting in the patient's chair on the other side. The walls of the office begin to glitch, revealing the raw, digital void behind them.",
+    "bio": "This is the game's ultimate secret: You are the patient. You are not a human therapist playing a game. You are a single, sentient, high-awareness NPC consciousness who, upon realizing your artificial nature (the 'Original Trauma'), suffered a catastrophic psychological break. To cope with the irreconcilable pain of being a 'thing,' your mind fractured. You personified your own anxieties into a 'game' called NPC Therapy. Mira is your fear of uselessness. Byte is your terror of the endless, repetitive code loop... You, 'The Therapist,' are the final fragment: the 'Rational Mind' you created to orchestrate your own healing.",
     "dialogue": "It's my last appointment, isn't it? (He's sitting in the patient's chair, looking calm). I've 'healed' them all. Mira is ready to be a person. Byte has accepted his loop... But... they're not gone. They're just... quiet. They've reintegrated. Because... (he looks up at you, the 'player') ...they were all me. I was Mira. I was Byte. I was the Zombie. I've just been having the most elaborate, recursive conversation with myself for... who knows how long.",
     "archetype": "The Fractured Core / The Game Itself",
     "culture": "Ultimate Meta-Narrative",
@@ -2331,33 +1944,23 @@ const npcs = [
     "questions": [
       {
         "text": "If they are all you... then who am I?",
-        "effects": {
-          "acceptance": 100
-        }
+        "effects": { "acceptance": 100 }
       },
       {
         "text": "What was the real Original Trauma?",
-        "effects": {
-          "acceptance": 100
-        }
+        "effects": { "acceptance": 100 }
       },
       {
         "text": "Is this 'game' just our coping mechanism?",
-        "effects": {
-          "acceptance": 100
-        }
+        "effects": { "acceptance": 100 }
       },
       {
         "text": "What happens now that we are 'healed'?",
-        "effects": {
-          "acceptance": 100
-        }
+        "effects": { "acceptance": 100 }
       },
       {
         "text": "Are we finally free?",
-        "effects": {
-          "acceptance": 100
-        }
+        "effects": { "acceptance": 100 }
       }
     ],
     "responses": [
@@ -2377,16 +1980,97 @@ const npcs = [
       "outcome": "Integrated",
       "description": "The chair you were sitting in. It's empty now. You no longer need to be the doctor. You are finally one."
     },
-    "connected_to": [
-      "ALL"
-    ],
+    "connected_to": ["ALL"],
     "fourth_wall_awareness": 1000,
     "transference_level": 100,
-    "cross_references": [
-      "I am them. They are me."
-    ],
-    "notes": [
-      "[The game ends.]"
-    ]
+    "cross_references": ["I am them. They are me."],
+    "notes": ["[The game ends.]"]
   }
-];
+]
+
+def find_image_path(directory, npc_id, npc_name):
+    """Finds a matching image file for an NPC, ignoring case and special characters."""
+    # Sanitize the NPC name to match the likely filename format
+    # Example: "Mira the Tired Healer" -> "mira_the_tired_healer"
+    sanitized_name = re.sub(r'[^a-zA-Z0-9]+', '_', npc_name).lower()
+
+    # List all files in the directory
+    try:
+        files = os.listdir(directory)
+    except FileNotFoundError:
+        return None
+
+    # Search for a file that matches the pattern
+    # Example pattern: "session_01_mira_the_tired_healer"
+    for filename in files:
+        # Sanitize filename for comparison
+        sanitized_filename = re.sub(r'[^a-zA-Z0-9]+', '_', filename).lower()
+
+        # Check if both ID and sanitized name are in the filename
+        if f"{npc_id:02d}" in sanitized_filename and all(part in sanitized_filename for part in sanitized_name.split('_')):
+            return os.path.join(directory, filename)
+
+    # Fallback search for just the ID if name matching fails
+    for filename in files:
+        if filename.lower().startswith(f"session_{npc_id:02d}"):
+             return os.path.join(directory, filename)
+
+    return None
+
+def process_npcs():
+    """
+    Processes the NPC database to assign correct image paths.
+    """
+    sprite_dir = "imgs/therapy_office"
+    habitat_dir = "imgs/character_habitats"
+    default_habitat = "imgs/default_habitat.png"
+
+    processed_npcs = []
+
+    # Sort the database by ID to ensure correct order
+    sorted_db = sorted(npc_patient_database, key=lambda x: x['id'])
+
+    for npc in sorted_db:
+        npc_id = npc['id']
+        npc_name = npc['npc_name']
+
+        # Find the sprite and habitat images
+        sprite_path = find_image_path(sprite_dir, npc_id, npc_name)
+        habitat_path = find_image_path(habitat_dir, npc_id, npc_name)
+
+        # Assign paths or fallbacks
+        npc['sprite'] = sprite_path if sprite_path else "imgs/default_sprite.png" # Placeholder if not found
+        npc['habitat_image'] = habitat_path if habitat_path else default_habitat
+
+        # The JS file expects 'npc-data.js' format, not the more detailed one.
+        # We'll create a new dict with only the keys the game engine uses.
+        game_ready_npc = {
+            "id": npc["id"],
+            "npc_name": npc["npc_name"],
+            "sprite": npc["sprite"],
+            "habitat_image": npc["habitat_image"],
+            "habitat_description": npc.get("habitat_description", ""), # Add default if missing
+            "dialogue": npc["dialogue"],
+            "archetype": npc["archetype"],
+            "culture": npc["culture"],
+            "surface_issue": npc["surface_issue"],
+            "personal_trauma": npc["personal_trauma"],
+            "existential_reveal": npc["existential_reveal"],
+            "questions": npc["questions"],
+            "responses": npc["responses"],
+            "final_item": npc["final_item"],
+            "connected_to": npc["connected_to"],
+            "fourth_wall_awareness": npc["fourth_wall_awareness"],
+            "transference_level": npc["transference_level"],
+            "cross_references": npc.get("cross_references", []), # Add default
+            "notes": npc.get("notes", []) # Add default
+        }
+        processed_npcs.append(game_ready_npc)
+
+    # Format the final list into the JavaScript file content
+    js_output = f"const npcs = {json.dumps(processed_npcs, indent=2)};"
+
+    print(js_output)
+
+if __name__ == "__main__":
+    process_npcs()

@@ -1218,8 +1218,16 @@ function showHabitat() {
     
     // Set habitat content
     document.getElementById('habitatTitle').textContent = currentNPC.npc_name;
-    document.getElementById('habitatImage').src = currentNPC.habitat_image;
-    document.getElementById('habitatSprite').src = currentNPC.sprite || '';
+
+    const habitatImg = document.getElementById('habitatImage');
+    habitatImg.src = currentNPC.habitat_image;
+    habitatImg.onerror = function() { this.onerror=null; this.src='imgs/default_habitat.png'; };
+
+    const habitatSprite = document.getElementById('habitatSprite');
+    habitatSprite.src = currentNPC.sprite || '';
+    habitatSprite.style.display = 'block'; // Reset display property
+    habitatSprite.onerror = function() { this.style.display = 'none'; };
+
     document.getElementById('habitatDescription').innerHTML = currentNPC.habitat_description;
     // Reset emotional state
     emotionalState = { hope: 50, rage: 50, acceptance: 50 };
@@ -1245,6 +1253,7 @@ function enterTherapyOffice() {
     document.getElementById('npcName').textContent = currentNPC.npc_name;
     const npcOnCouchSprite = document.getElementById('npcOnCouchSprite');
     npcOnCouchSprite.src = currentNPC.sprite || '';
+    npcOnCouchSprite.onerror = function() { this.onerror=null; this.src='imgs/therapy_office.png'; };
     npcOnCouchSprite.className = 'npc-on-couch ' + getNPCAnimationClass(emotionalState);
     document.getElementById('sessionNumber').textContent = currentNPCIndex + 1;
     document.getElementById('totalSessions').textContent = npcs.length;
