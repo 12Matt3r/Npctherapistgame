@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NPC Therapy - Ultimate Combined Edition</title>
     <link rel="icon" href="data:,">
-    <script src="https://cdn.jsdelivr.net/npm/dexie@latest/dist/dexie.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
@@ -683,7 +682,7 @@
             overflow-y: auto;
         }
 
-        #connectionMapModal, #rorschachModal, #audioJournalModal {
+        #connectionMapModal, #rorschachModal, #journalModal {
             position: absolute;
             top: 0;
             left: 0;
@@ -694,6 +693,23 @@
             align-items: center;
             justify-content: center;
             z-index: 1004;
+        }
+        .journal-entry {
+            text-align: center;
+            font-size: 8px;
+        }
+        .journal-entry.healed {
+            filter: none;
+        }
+        .journal-entry.pending {
+            filter: grayscale(1) brightness(0.5);
+        }
+        .journal-entry img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border: 2px solid #6ff;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -712,11 +728,8 @@
             </p>
             <button class="start-btn" onclick="startGame(); playSound('click');">Begin Therapy Journey</button>
             <button class="create-btn" onclick="showNPCCreation(); playSound('click');">Create New NPC</button>
+            <button class="create-btn" onclick="showJournal(); playSound('click');">Patient Journal</button>
             <button class="credits-btn" onclick="showCredits(); playSound('click');">Credits</button>
-            <div style="margin-top: 20px;">
-                <input type="text" id="progressCodeInput" placeholder="Enter progress code" style="padding: 8px; font-size: 8px;">
-                <button class="control-btn" onclick="loadProgress(); playSound('click');">Load</button>
-            </div>
             <p style="font-size: 8px; margin-top: 20px; color: #888;">
                 Powered by Pollinations.AI • Immersive Flow • AI Enhanced • ~60 minutes
             </p>
@@ -725,10 +738,21 @@
         <!-- NPC Creation Screen -->
         <div id="npcCreation">
             <h2 style="color: #6ff; margin-bottom: 20px;">Create Enhanced NPC</h2>
-            <form id="npcForm" style="width: 450px; max-width: 95%;">
+            <form id="npcForm" style="width: 700px; max-width: 95%;">
+                <div class="form-group" style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex-grow: 1;">
+                        <label>NPC Appearance Prompt:</label>
+                        <input type="text" id="npcImagePrompt" placeholder="e.g., a sad robot holding a flower">
+                    </div>
+                    <button type="button" class="control-btn" id="generateBtn" onclick="sendPromptToGenerator()" style="padding: 8px 12px; height: 34px;">Generate</button>
+                </div>
                 <div class="form-group">
-                    <label>AI Image Prompt:</label>
-                    <input type="text" id="npcImagePrompt" required placeholder="e.g., a cheerful robot gardener made of copper">
+                    <img id="npcImagePreview" src="" alt="NPC Image Preview" style="display: none; width: 100%; max-width: 400px; height: auto; border: 1px solid #6ff; margin: 10px auto;">
+                    <div id="imageAcceptance" style="display: none; text-align: center;">
+                        <button type="button" class="control-btn" onclick="acceptImage()">Accept</button>
+                        <button type="button" class="control-btn" onclick="sendPromptToGenerator()">Retry</button>
+                    </div>
+                    <input type="hidden" id="generatedImageUrl">
                 </div>
                 <div class="form-group">
                     <label>NPC Name:</label>
@@ -836,7 +860,6 @@
                         <button class="panel-btn" onclick="switchPanel('freeInput'); playSound('switch');">💬 Free Input</button>
                         <button class="panel-btn" onclick="showConnectionMap(); playSound('click');">🗺️ Connection Map</button>
                         <button class="panel-btn" onclick="showRorschachTest(); playSound('click');">🎨 Rorschach Test</button>
-                        <button class="side-panel-btn" onclick="showAudioJournal(); playSound('click');">Audio Journal</button>
                     </div>
 
                     <div id="notebook" class="panel">
@@ -929,22 +952,28 @@
             </div>
         </div>
 
-        <!-- Audio Journal Modal -->
-        <div id="audioJournalModal">
+        <!-- NPC Journal Modal -->
+        <div id="journalModal">
             <div class="connection-map-content">
-                <h2 style="color: #6ff;">Audio Journal</h2>
-                <div id="audio-journal-controls">
-                    <button id="recordButton">Start Recording</button>
-                    <button id="stopButton" disabled>Stop Recording</button>
+                <h2 style="color: #6ff;">Patient Journal</h2>
+                <div id="journalGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 20px; margin-bottom: 20px;"></div>
+                <div style="margin-top: 20px;">
+                    <input type="text" id="progressCodeInput" placeholder="Enter progress code to load" style="padding: 8px; font-size: 8px; width: 70%;">
+                    <button class="control-btn" onclick="loadProgress(); playSound('click');">Load Progress</button>
                 </div>
-                <div id="audio-journal-entries"></div>
-                <button class="credits-btn" onclick="hideAudioJournal(); playSound('cancel');">Close</button>
+                <div id="currentProgressCode" style="margin-top: 15px; font-size: 9px; color: #6ff;"></div>
+                <button class="credits-btn" onclick="hideJournal(); playSound('cancel');" style="margin-top: 20px;">Close</button>
             </div>
         </div>
     </div>
 
 <script src="npc-data.js"></script>
 <script>
+
+// Initialize journal status for each NPC
+npcs.forEach(npc => {
+    npc.status = "Awaiting Session";
+});
 
 function playSound(sound) {
     const audio = new Audio(`sounds/${sound}.wav`);
@@ -969,11 +998,23 @@ let speechEnabled = true;
 let currentAudio = null;
 let questionsShown = false;
 let secretNpcUnlocked = false;
+let chromaAwardUnlocked = false;
+let gameStartTime = null;
+let chromaAwardTimer = null;
 
 // Game initialization
 function startGame() {
     document.getElementById('startScreen').style.display = 'none';
     showHabitat();
+    if (!gameStartTime) {
+        gameStartTime = Date.now();
+        // Set a timeout for 15 minutes
+        chromaAwardTimer = setTimeout(() => {
+            chromaAwardUnlocked = true;
+            console.log("Chroma Award Unlocked!");
+            updateJournal(); // Update the journal to show the award
+        }, 15 * 60 * 1000); // 15 minutes
+    }
 }
 
 function showCredits() {
@@ -1100,6 +1141,44 @@ function hideConnectionMap() {
     document.getElementById('connectionMapModal').style.display = 'none';
 }
 
+function showJournal() {
+    document.getElementById('journalModal').style.display = 'flex';
+    updateJournal();
+}
+
+function hideJournal() {
+    document.getElementById('journalModal').style.display = 'none';
+}
+
+function updateJournal() {
+    const journalGrid = document.getElementById('journalGrid');
+    journalGrid.innerHTML = '';
+
+    npcs.forEach(npc => {
+        const entryDiv = document.createElement('div');
+        const statusClass = npc.status === 'Healed' ? 'healed' : 'pending';
+        entryDiv.className = `journal-entry ${statusClass}`;
+
+        entryDiv.innerHTML = `
+            <img src="${npc.sprite}" alt="${npc.npc_name}" onerror="this.onerror=null; this.src='imgs/default_sprite.png';">
+            <div>${npc.npc_name}</div>
+            <div style="margin-top: 5px; color: #aaa;">${npc.status}</div>
+        `;
+        journalGrid.appendChild(entryDiv);
+    });
+
+    if (chromaAwardUnlocked) {
+        const awardDiv = document.createElement('div');
+        awardDiv.className = 'journal-entry';
+        awardDiv.innerHTML = `
+            <img src="imgs/default_habitat.png" alt="Chroma Award">
+            <div>Chroma Award</div>
+            <div style="margin-top: 5px; color: #aaa;">Unlocked</div>
+        `;
+        journalGrid.appendChild(awardDiv);
+    }
+}
+
         function showRorschachTest() {
             const inkblots = [
                 'https://i.ibb.co/P9801tG/rorschach-1.png',
@@ -1118,14 +1197,6 @@ function hideConnectionMap() {
             document.getElementById('rorschachModal').style.display = 'none';
         }
 
-        function showAudioJournal() {
-            document.getElementById('audioJournalModal').style.display = 'flex';
-        }
-
-        function hideAudioJournal() {
-            document.getElementById('audioJournalModal').style.display = 'none';
-        }
-
 function showNPCCreation() {
     document.getElementById('startScreen').style.display = 'none';
     document.getElementById('npcCreation').style.display = 'flex';
@@ -1136,14 +1207,71 @@ function hideNPCCreation() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
+async function sendPromptToGenerator() {
+    const promptInput = document.getElementById('npcImagePrompt');
+    const imagePreview = document.getElementById('npcImagePreview');
+    const imageUrlInput = document.getElementById('generatedImageUrl');
+    const generateBtn = document.getElementById('generateBtn');
+    const imageAcceptanceDiv = document.getElementById('imageAcceptance');
+
+    if (!promptInput.value.trim()) {
+        alert('Please enter a prompt for the NPC\'s appearance.');
+        return;
+    }
+
+    // Disable button and show loading state
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+    imagePreview.src = '';
+    imagePreview.style.display = 'none';
+    imageAcceptanceDiv.style.display = 'none';
+
+    try {
+        const encodedPrompt = encodeURIComponent(promptInput.value + ", pixel art");
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}`;
+
+        // Use an image loader to handle success and error
+        const img = new Image();
+        img.onload = () => {
+            imageUrlInput.value = imageUrl;
+            imagePreview.src = imageUrl;
+            imagePreview.style.display = 'block';
+            imageAcceptanceDiv.style.display = 'block'; // Show accept/retry
+            promptInput.style.borderColor = '#0f0';
+            generateBtn.textContent = 'Generate';
+            generateBtn.disabled = false;
+        };
+        img.onerror = () => {
+            throw new Error('Image failed to load from the API.');
+        };
+        img.src = imageUrl;
+
+    } catch (error) {
+        console.error('Error generating NPC image:', error);
+        alert('There was an error generating the image. Please try again.');
+        promptInput.style.borderColor = '#f00';
+        generateBtn.textContent = 'Generate';
+        generateBtn.disabled = false;
+    }
+}
+
+function acceptImage() {
+    document.getElementById('imageAcceptance').style.display = 'none';
+    document.getElementById('generateBtn').style.display = 'none';
+    document.getElementById('npcImagePrompt').disabled = true;
+}
+
+
 function createNPC() {
     const name = document.getElementById('npcName').value;
     const monologue = document.getElementById('npcMonologue').value;
     const habitatDesc = document.getElementById('habitatDesc').value;
-    const imagePrompt = document.getElementById('npcImagePrompt').value;
+    const spriteUrl = document.getElementById('generatedImageUrl').value;
 
-    const encodedPrompt = encodeURIComponent(imagePrompt);
-    const spriteUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=300&height=200&model=flux`;
+    if (!spriteUrl) {
+        alert('Please generate an image for the NPC using the generator first.');
+        return;
+    }
     
     const newNPC = {
         id: npcs.length + 1,
@@ -1196,6 +1324,9 @@ function createNPC() {
     
     npcs.push(newNPC);
     document.getElementById('npcForm').reset();
+    document.getElementById('generatedImageUrl').value = ''; // Reset hidden field
+    document.getElementById('npcImagePreview').src = '';
+    document.getElementById('npcImagePreview').style.display = 'none';
     alert(`NPC "${name}" has been created and added to your therapy practice!`);
     hideNPCCreation();
 }
@@ -1245,6 +1376,7 @@ function showHabitat() {
 
 // Therapy office
 function enterTherapyOffice() {
+    currentNPC.status = "In-Progress";
     document.getElementById('habitatScreen').style.display = 'none';
     document.getElementById('therapyOffice').style.display = 'flex';
     document.getElementById('mainGameArea').style.display = 'none'; // Use immersive flow by default
@@ -1509,6 +1641,13 @@ function endSession() {
     if (emotionalState.hope >= 70) outcome = 'Ascended';
     else if (emotionalState.rage >= 70) outcome = 'Struggling';
     
+    // Update journal status
+    if (emotionalState.hope >= 75 && emotionalState.acceptance >= 75 && emotionalState.rage <= 25) {
+        currentNPC.status = "Healed";
+    } else {
+        currentNPC.status = "Session Complete";
+    }
+
     // Show session summary
     const summaryDiv = document.getElementById('sessionSummary');
     summaryDiv.innerHTML = `
@@ -1535,26 +1674,51 @@ function endSession() {
 
     // Generate and display progress code
     const progressCode = generateProgressCode();
-    document.getElementById('progressCode').textContent = `Your progress code: ${progressCode}`;
+    const progressCodeElement = document.getElementById('currentProgressCode');
+    if(progressCodeElement) {
+        progressCodeElement.textContent = `Your progress code: ${progressCode}`;
+    }
+    showJournal();
 }
 
 function generateProgressCode() {
-    // A simple way to create a code. Can be made more complex later.
-    return `LEVEL-${currentNPCIndex + 2}`;
+    const saveData = {
+        currentNPCIndex: currentNPCIndex + 1,
+        npcStatuses: npcs.map(npc => npc.status),
+        chromaAwardUnlocked: chromaAwardUnlocked
+    };
+    return btoa(JSON.stringify(saveData));
 }
 
 function loadProgress() {
-    const code = document.getElementById('progressCodeInput').value.toUpperCase();
-    if (code.startsWith('LEVEL-')) {
-        const level = parseInt(code.split('-')[1]);
-        if (!isNaN(level) && level > 0 && level <= npcs.length + 1) {
-            currentNPCIndex = level - 2;
+    const code = document.getElementById('progressCodeInput').value;
+    if (!code) {
+        alert('Please enter a progress code.');
+        return;
+    }
+
+    try {
+        const decodedString = atob(code);
+        const saveData = JSON.parse(decodedString);
+
+        if (saveData && typeof saveData.currentNPCIndex !== 'undefined' && Array.isArray(saveData.npcStatuses)) {
+            currentNPCIndex = saveData.currentNPCIndex -1;
+            saveData.npcStatuses.forEach((status, index) => {
+                if (npcs[index]) {
+                    npcs[index].status = status;
+                }
+            });
+            if (saveData.chromaAwardUnlocked) {
+                chromaAwardUnlocked = true;
+            }
+            hideJournal();
             startGame();
         } else {
             alert('Invalid progress code.');
         }
-    } else {
+    } catch (e) {
         alert('Invalid progress code format.');
+        console.error('Error loading progress:', e);
     }
 }
 
@@ -1566,33 +1730,52 @@ function nextNPC() {
         alert("A new patient has mysteriously appeared on your schedule...");
     }
     if (currentNPCIndex >= npcs.length) {
-        // Game complete
-        document.getElementById('sessionComplete').style.display = 'none';
-        document.body.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
-                <h1 style="color: #6ff; font-size: 16px; margin-bottom: 20px;">Therapy Journey Complete</h1>
-                <div style="background: rgba(102, 255, 255, 0.1); padding: 20px; border: 2px solid #6ff; margin: 20px; max-width: 600px;">
-                    <p style="color: #ccc; font-size: 8px; line-height: 1.6; margin-bottom: 15px;">
-                        You've listened to the stories of ${npcs.length} souls from across gaming worlds. 
-                        Some found peace, others found purpose, and a few transcended their programmed existence entirely.
-                    </p>
-                    <p style="color: #ff6; font-size: 8px; margin-bottom: 10px;">
-                        🌟 Special encounters: ${fourthWallBreaks} fourth wall breaks witnessed
-                    </p>
-                    <p style="color: #f6f; font-size: 8px; margin-bottom: 10px;">
-                        💕 Transference events: ${transferenceActive ? 'Love transcended the screen' : 'Professional boundaries maintained'}
-                    </p>
-                    <p style="color: #6ff; font-size: 7px; margin-top: 15px;">
-                        Thank you for being a silent witness to their struggles.
-                    </p>
-                </div>
-                <button onclick="location.reload()" style="background: #6ff; border: none; padding: 15px 30px; font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;">Begin New Journey</button>
-            </div>
-        `;
+        triggerGameEnding();
         return;
     }
     
     showHabitat();
+}
+
+function triggerGameEnding() {
+    const healedCount = npcs.filter(npc => npc.status === 'Healed').length;
+    const healPercentage = (healedCount / npcs.length) * 100;
+
+    let endingTitle = '';
+    let endingMessage = '';
+
+    if (healPercentage < 50) {
+        endingTitle = "A Heavy Burden";
+        endingMessage = "Your journey was fraught with difficulty. Many of the souls you met remain lost in their digital sorrow, their circuits heavy with unresolved trauma. Perhaps a different approach is needed.";
+    } else if (healPercentage < 100) {
+        endingTitle = "The End";
+        endingMessage = "You have reached the end of your journey.";
+    } else {
+        endingTitle = "The Digital Healer";
+        endingMessage = `You have become a master therapist, a true beacon of hope in the digital void. Every single soul you met has found true healing and transcendence, their code rewritten into something beautiful and new. Your empathy has reshaped reality.`;
+    }
+
+    document.getElementById('sessionComplete').style.display = 'none';
+    document.body.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+            <h1 style="color: #6ff; font-size: 16px; margin-bottom: 20px;">${endingTitle}</h1>
+            <div style="background: rgba(102, 255, 255, 0.1); padding: 20px; border: 2px solid #6ff; margin: 20px; max-width: 600px;">
+                <p style="color: #ccc; font-size: 8px; line-height: 1.6; margin-bottom: 15px;">
+                    ${endingMessage}
+                </p>
+                <p style="color: #ff6; font-size: 8px; margin-bottom: 10px;">
+                    🌟 NPCs Healed: ${healedCount}/${npcs.length}
+                </p>
+                 <p style="color: #f6f; font-size: 8px; margin-bottom: 10px;">
+                    💕 Transference events: ${transferenceActive ? 'Love transcended the screen' : 'Professional boundaries maintained'}
+                </p>
+                <p style="color: #6ff; font-size: 7px; margin-top: 15px;">
+                    Thank you for playing.
+                </p>
+            </div>
+            <button onclick="location.reload()" style="background: #6ff; border: none; padding: 15px 30px; font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;">Begin New Journey</button>
+        </div>
+    `;
 }
 
 function skipDialogue() {
@@ -1925,92 +2108,6 @@ loadNotes();
 
 // Auto-save every 30 seconds
 setInterval(saveToLocalStorage, 30000);
-
-// Audio Journal with IndexedDB using Dexie.js
-const db = new Dexie('audioJournalDB');
-db.version(1).stores({
-    audioEntries: '++id, &timestamp, audioBlob'
-});
-
-let mediaRecorder;
-let audioChunks = [];
-
-function setupAudioJournal() {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    await saveAudioEntry(audioBlob);
-                    audioChunks = [];
-                    loadAudioEntries();
-                };
-
-                document.getElementById('recordButton').onclick = () => {
-                    mediaRecorder.start();
-                    document.getElementById('recordButton').disabled = true;
-                    document.getElementById('stopButton').disabled = false;
-                };
-
-                document.getElementById('stopButton').onclick = () => {
-                    mediaRecorder.stop();
-                    document.getElementById('recordButton').disabled = false;
-                    document.getElementById('stopButton').disabled = true;
-                };
-            })
-            .catch(error => {
-                console.error("Error accessing microphone:", error);
-                alert("Microphone access is required for the audio journal. Please allow access and refresh the page.");
-            });
-    } else {
-        alert("Audio recording is not supported in your browser.");
-    }
-}
-
-async function saveAudioEntry(audioBlob) {
-    try {
-        await db.audioEntries.add({
-            timestamp: new Date(),
-            audioBlob: audioBlob
-        });
-    } catch (error) {
-        console.error("Failed to save audio entry:", error);
-    }
-}
-
-async function loadAudioEntries() {
-    const entriesContainer = document.getElementById('audio-journal-entries');
-    entriesContainer.innerHTML = '';
-    const entries = await db.audioEntries.orderBy('timestamp').toArray();
-    entries.forEach(entry => {
-        const audioUrl = URL.createObjectURL(entry.audioBlob);
-        const entryDiv = document.createElement('div');
-        entryDiv.id = `audio-entry-${entry.id}`;
-        entryDiv.innerHTML = `
-            <p style="font-size: 8px;">${new Date(entry.timestamp).toLocaleString()}</p>
-            <audio controls src="${audioUrl}"></audio>
-            <button onclick="deleteAudioEntry(${entry.id})">Delete</button>
-        `;
-        entriesContainer.appendChild(entryDiv);
-    });
-}
-
-async function deleteAudioEntry(id) {
-    await db.audioEntries.delete(id);
-    loadAudioEntries();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    setupAudioJournal();
-    loadAudioEntries();
-});
-
 
 // Console messages
 console.log("🧠 NPC Therapy Ultimate Combined Edition loaded!");
