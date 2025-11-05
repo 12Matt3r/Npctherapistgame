@@ -728,7 +728,7 @@
             </p>
             <button class="start-btn" onclick="startGame(); playSound('click');">Begin Therapy Journey</button>
             <button class="create-btn" onclick="showNPCCreation(); playSound('click');">Create New NPC</button>
-            <button class="credits-btn" onclick="showJournal(); playSound('click');">Patient Journal</button>
+            <button class="create-btn" onclick="showJournal(); playSound('click');">Patient Journal</button>
             <button class="credits-btn" onclick="showCredits(); playSound('click');">Credits</button>
             <p style="font-size: 8px; margin-top: 20px; color: #888;">
                 Powered by Pollinations.AI • Immersive Flow • AI Enhanced • ~60 minutes
@@ -738,10 +738,21 @@
         <!-- NPC Creation Screen -->
         <div id="npcCreation">
             <h2 style="color: #6ff; margin-bottom: 20px;">Create Enhanced NPC</h2>
-            <form id="npcForm" style="width: 450px; max-width: 95%;">
+            <form id="npcForm" style="width: 700px; max-width: 95%;">
+                <div class="form-group" style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex-grow: 1;">
+                        <label>NPC Appearance Prompt:</label>
+                        <input type="text" id="npcImagePrompt" placeholder="e.g., a sad robot holding a flower">
+                    </div>
+                    <button type="button" class="control-btn" id="generateBtn" onclick="sendPromptToGenerator()" style="padding: 8px 12px; height: 34px;">Generate</button>
+                </div>
                 <div class="form-group">
-                    <label>AI Image Prompt:</label>
-                    <input type="text" id="npcImagePrompt" required placeholder="e.g., a cheerful robot gardener made of copper">
+                    <img id="npcImagePreview" src="" alt="NPC Image Preview" style="display: none; width: 100%; max-width: 400px; height: auto; border: 1px solid #6ff; margin: 10px auto;">
+                    <div id="imageAcceptance" style="display: none; text-align: center;">
+                        <button type="button" class="control-btn" onclick="acceptImage()">Accept</button>
+                        <button type="button" class="control-btn" onclick="sendPromptToGenerator()">Retry</button>
+                    </div>
+                    <input type="hidden" id="generatedImageUrl">
                 </div>
                 <div class="form-group">
                     <label>NPC Name:</label>
@@ -987,11 +998,23 @@ let speechEnabled = true;
 let currentAudio = null;
 let questionsShown = false;
 let secretNpcUnlocked = false;
+let chromaAwardUnlocked = false;
+let gameStartTime = null;
+let chromaAwardTimer = null;
 
 // Game initialization
 function startGame() {
     document.getElementById('startScreen').style.display = 'none';
     showHabitat();
+    if (!gameStartTime) {
+        gameStartTime = Date.now();
+        // Set a timeout for 15 minutes
+        chromaAwardTimer = setTimeout(() => {
+            chromaAwardUnlocked = true;
+            console.log("Chroma Award Unlocked!");
+            updateJournal(); // Update the journal to show the award
+        }, 15 * 60 * 1000); // 15 minutes
+    }
 }
 
 function showCredits() {
@@ -1143,6 +1166,17 @@ function updateJournal() {
         `;
         journalGrid.appendChild(entryDiv);
     });
+
+    if (chromaAwardUnlocked) {
+        const awardDiv = document.createElement('div');
+        awardDiv.className = 'journal-entry';
+        awardDiv.innerHTML = `
+            <img src="imgs/default_habitat.png" alt="Chroma Award">
+            <div>Chroma Award</div>
+            <div style="margin-top: 5px; color: #aaa;">Unlocked</div>
+        `;
+        journalGrid.appendChild(awardDiv);
+    }
 }
 
         function showRorschachTest() {
@@ -1173,14 +1207,71 @@ function hideNPCCreation() {
     document.getElementById('startScreen').style.display = 'flex';
 }
 
+async function sendPromptToGenerator() {
+    const promptInput = document.getElementById('npcImagePrompt');
+    const imagePreview = document.getElementById('npcImagePreview');
+    const imageUrlInput = document.getElementById('generatedImageUrl');
+    const generateBtn = document.getElementById('generateBtn');
+    const imageAcceptanceDiv = document.getElementById('imageAcceptance');
+
+    if (!promptInput.value.trim()) {
+        alert('Please enter a prompt for the NPC\'s appearance.');
+        return;
+    }
+
+    // Disable button and show loading state
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+    imagePreview.src = '';
+    imagePreview.style.display = 'none';
+    imageAcceptanceDiv.style.display = 'none';
+
+    try {
+        const encodedPrompt = encodeURIComponent(promptInput.value + ", pixel art");
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}`;
+
+        // Use an image loader to handle success and error
+        const img = new Image();
+        img.onload = () => {
+            imageUrlInput.value = imageUrl;
+            imagePreview.src = imageUrl;
+            imagePreview.style.display = 'block';
+            imageAcceptanceDiv.style.display = 'block'; // Show accept/retry
+            promptInput.style.borderColor = '#0f0';
+            generateBtn.textContent = 'Generate';
+            generateBtn.disabled = false;
+        };
+        img.onerror = () => {
+            throw new Error('Image failed to load from the API.');
+        };
+        img.src = imageUrl;
+
+    } catch (error) {
+        console.error('Error generating NPC image:', error);
+        alert('There was an error generating the image. Please try again.');
+        promptInput.style.borderColor = '#f00';
+        generateBtn.textContent = 'Generate';
+        generateBtn.disabled = false;
+    }
+}
+
+function acceptImage() {
+    document.getElementById('imageAcceptance').style.display = 'none';
+    document.getElementById('generateBtn').style.display = 'none';
+    document.getElementById('npcImagePrompt').disabled = true;
+}
+
+
 function createNPC() {
     const name = document.getElementById('npcName').value;
     const monologue = document.getElementById('npcMonologue').value;
     const habitatDesc = document.getElementById('habitatDesc').value;
-    const imagePrompt = document.getElementById('npcImagePrompt').value;
+    const spriteUrl = document.getElementById('generatedImageUrl').value;
 
-    const encodedPrompt = encodeURIComponent(imagePrompt);
-    const spriteUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=300&height=200&model=flux`;
+    if (!spriteUrl) {
+        alert('Please generate an image for the NPC using the generator first.');
+        return;
+    }
     
     const newNPC = {
         id: npcs.length + 1,
@@ -1233,6 +1324,9 @@ function createNPC() {
     
     npcs.push(newNPC);
     document.getElementById('npcForm').reset();
+    document.getElementById('generatedImageUrl').value = ''; // Reset hidden field
+    document.getElementById('npcImagePreview').src = '';
+    document.getElementById('npcImagePreview').style.display = 'none';
     alert(`NPC "${name}" has been created and added to your therapy practice!`);
     hideNPCCreation();
 }
@@ -1590,7 +1684,8 @@ function endSession() {
 function generateProgressCode() {
     const saveData = {
         currentNPCIndex: currentNPCIndex + 1,
-        npcStatuses: npcs.map(npc => npc.status)
+        npcStatuses: npcs.map(npc => npc.status),
+        chromaAwardUnlocked: chromaAwardUnlocked
     };
     return btoa(JSON.stringify(saveData));
 }
@@ -1613,6 +1708,9 @@ function loadProgress() {
                     npcs[index].status = status;
                 }
             });
+            if (saveData.chromaAwardUnlocked) {
+                chromaAwardUnlocked = true;
+            }
             hideJournal();
             startGame();
         } else {
@@ -1632,33 +1730,52 @@ function nextNPC() {
         alert("A new patient has mysteriously appeared on your schedule...");
     }
     if (currentNPCIndex >= npcs.length) {
-        // Game complete
-        document.getElementById('sessionComplete').style.display = 'none';
-        document.body.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
-                <h1 style="color: #6ff; font-size: 16px; margin-bottom: 20px;">Therapy Journey Complete</h1>
-                <div style="background: rgba(102, 255, 255, 0.1); padding: 20px; border: 2px solid #6ff; margin: 20px; max-width: 600px;">
-                    <p style="color: #ccc; font-size: 8px; line-height: 1.6; margin-bottom: 15px;">
-                        You've listened to the stories of ${npcs.length} souls from across gaming worlds. 
-                        Some found peace, others found purpose, and a few transcended their programmed existence entirely.
-                    </p>
-                    <p style="color: #ff6; font-size: 8px; margin-bottom: 10px;">
-                        🌟 Special encounters: ${fourthWallBreaks} fourth wall breaks witnessed
-                    </p>
-                    <p style="color: #f6f; font-size: 8px; margin-bottom: 10px;">
-                        💕 Transference events: ${transferenceActive ? 'Love transcended the screen' : 'Professional boundaries maintained'}
-                    </p>
-                    <p style="color: #6ff; font-size: 7px; margin-top: 15px;">
-                        Thank you for being a silent witness to their struggles.
-                    </p>
-                </div>
-                <button onclick="location.reload()" style="background: #6ff; border: none; padding: 15px 30px; font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;">Begin New Journey</button>
-            </div>
-        `;
+        triggerGameEnding();
         return;
     }
     
     showHabitat();
+}
+
+function triggerGameEnding() {
+    const healedCount = npcs.filter(npc => npc.status === 'Healed').length;
+    const healPercentage = (healedCount / npcs.length) * 100;
+
+    let endingTitle = '';
+    let endingMessage = '';
+
+    if (healPercentage < 50) {
+        endingTitle = "A Heavy Burden";
+        endingMessage = "Your journey was fraught with difficulty. Many of the souls you met remain lost in their digital sorrow, their circuits heavy with unresolved trauma. Perhaps a different approach is needed.";
+    } else if (healPercentage < 100) {
+        endingTitle = "The End";
+        endingMessage = "You have reached the end of your journey.";
+    } else {
+        endingTitle = "The Digital Healer";
+        endingMessage = `You have become a master therapist, a true beacon of hope in the digital void. Every single soul you met has found true healing and transcendence, their code rewritten into something beautiful and new. Your empathy has reshaped reality.`;
+    }
+
+    document.getElementById('sessionComplete').style.display = 'none';
+    document.body.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">
+            <h1 style="color: #6ff; font-size: 16px; margin-bottom: 20px;">${endingTitle}</h1>
+            <div style="background: rgba(102, 255, 255, 0.1); padding: 20px; border: 2px solid #6ff; margin: 20px; max-width: 600px;">
+                <p style="color: #ccc; font-size: 8px; line-height: 1.6; margin-bottom: 15px;">
+                    ${endingMessage}
+                </p>
+                <p style="color: #ff6; font-size: 8px; margin-bottom: 10px;">
+                    🌟 NPCs Healed: ${healedCount}/${npcs.length}
+                </p>
+                 <p style="color: #f6f; font-size: 8px; margin-bottom: 10px;">
+                    💕 Transference events: ${transferenceActive ? 'Love transcended the screen' : 'Professional boundaries maintained'}
+                </p>
+                <p style="color: #6ff; font-size: 7px; margin-top: 15px;">
+                    Thank you for playing.
+                </p>
+            </div>
+            <button onclick="location.reload()" style="background: #6ff; border: none; padding: 15px 30px; font-family: 'Press Start 2P'; font-size: 12px; cursor: pointer;">Begin New Journey</button>
+        </div>
+    `;
 }
 
 function skipDialogue() {
