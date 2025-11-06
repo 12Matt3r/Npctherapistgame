@@ -772,55 +772,53 @@
 
         <!-- Therapy Office -->
         <div id="therapyOffice" style="display: none;">
-            <div class="therapy-office-bg">
-                <div class="therapy-ui-top">
-                    <div class="tts-controls">
-                        <button class="control-btn" onclick="toggleTTS()" id="ttsBtn">🔊 TTS: ON</button>
-                    </div>
-                    <div class="session-status">
-                        <div>Session <span id="sessionNumber">1</span> of <span id="totalSessions">10</span></div>
-                        <div>Questions asked: <span id="questionsAsked">0</span>/5</div>
-                        <div>Layer: <span id="dialogueLayer">Surface</span></div>
-                    </div>
-                    <div class="emotion-meter">
-                        <div>Emotional State</div>
-                        <div class="emotion-bar">
-                            <div class="emotion-fill hope" id="hopeFill" style="width: 50%"></div>
-                        </div>
-                        <div style="font-size: 6px;">Hope: <span id="hopeValue">50</span>%</div>
-                        <div class="emotion-bar">
-                            <div class="emotion-fill rage" id="rageFill" style="width: 50%"></div>
-                        </div>
-                        <div style="font-size: 6px;">Rage: <span id="rageValue">50</span>%</div>
-                        <div class="emotion-bar">
-                            <div class="emotion-fill acceptance" id="acceptanceFill" style="width: 50%"></div>
-                        </div>
-                        <div style="font-size: 6px;">Acceptance: <span id="acceptanceValue">50</span>%</div>
-                    </div>
-                </div>
-
-                <div class="therapy-main">
-                    <img class="npc-on-couch" id="npcOnCouchSprite" alt="NPC on couch">
-                    <div class="dialogue-box">
-                        <div class="npc-name" id="npcName"></div>
-                        <div id="currentDialogue"></div>
-                        <div id="questionsContainer"></div>
-                    </div>
-                </div>
-
-                <div class="therapy-controls">
-                    <div class="control-panel">
-                        <button class="control-btn" id="nextQuestionBtn" onclick="askTherapyQuestion(); playSound('click');" disabled>Ask New Questions</button>
-                        <button class="control-btn" onclick="endSession(); playSound('confirm');" id="endSessionBtn" disabled>End Session</button>
-                        <button class="control-btn" onclick="skipDialogue(); playSound('click');" id="skipBtn">Continue</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Side Panel -->
             <div id="mainGameArea" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none;">
                 <div id="leftPanel">
-                    <!-- Same as therapy office but with side panel integration -->
+                    <div class="therapy-office-bg">
+                        <div class="therapy-ui-top">
+                            <div class="tts-controls">
+                                <button class="control-btn" onclick="toggleTTS()" id="ttsBtn">🔊 TTS: ON</button>
+                            </div>
+                            <div class="session-status">
+                                <div>Session <span id="sessionNumber">1</span> of <span id="totalSessions">10</span></div>
+                                <div>Questions asked: <span id="questionsAsked">0</span>/5</div>
+                                <div>Layer: <span id="dialogueLayer">Surface</span></div>
+                            </div>
+                            <div class="emotion-meter">
+                                <div>Emotional State</div>
+                                <div class="emotion-bar">
+                                    <div class="emotion-fill hope" id="hopeFill" style="width: 50%"></div>
+                                </div>
+                                <div style="font-size: 6px;">Hope: <span id="hopeValue">50</span>%</div>
+                                <div class="emotion-bar">
+                                    <div class="emotion-fill rage" id="rageFill" style="width: 50%"></div>
+                                </div>
+                                <div style="font-size: 6px;">Rage: <span id="rageValue">50</span>%</div>
+                                <div class="emotion-bar">
+                                    <div class="emotion-fill acceptance" id="acceptanceFill" style="width: 50%"></div>
+                                </div>
+                                <div style="font-size: 6px;">Acceptance: <span id="acceptanceValue">50</span>%</div>
+                            </div>
+                        </div>
+
+                        <div class="therapy-main">
+                            <img class="npc-on-couch" id="npcOnCouchSprite" alt="NPC on couch">
+                            <div class="dialogue-box">
+                                <div class="npc-name" id="npcName"></div>
+                                <div id="currentDialogue"></div>
+                                <div id="questionsContainer"></div>
+                            </div>
+                        </div>
+
+                        <div class="therapy-controls">
+                            <div class="control-panel">
+                                <button class="control-btn" id="nextQuestionBtn" onclick="askTherapyQuestion(); playSound('click');" disabled>Ask New Questions</button>
+                                <button class="control-btn" onclick="endSession(); playSound('confirm');" id="endSessionBtn" disabled>End Session</button>
+                                <button class="control-btn" onclick="skipDialogue(); playSound('click');" id="skipBtn">Continue</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="rightPanel">
@@ -1228,7 +1226,14 @@ function showHabitat() {
     habitatSprite.style.display = 'block'; // Reset display property
     habitatSprite.onerror = function() { this.style.display = 'none'; };
 
-    document.getElementById('habitatDescription').innerHTML = currentNPC.habitat_description;
+    const bioHtml = `
+        <p><em>${currentNPC.archetype}</em></p>
+        <p>${currentNPC.dialogue}</p>
+        <p><strong>Surface Issue:</strong> ${currentNPC.surface_issue}</p>
+        <p><strong>Personal Trauma:</strong> ${currentNPC.personal_trauma}</p>
+        <p><strong>Existential Reveal:</strong> ${currentNPC.existential_reveal}</p>
+    `;
+    document.getElementById('habitatDescription').innerHTML = bioHtml;
     // Reset emotional state
     emotionalState = { hope: 50, rage: 50, acceptance: 50 };
     questionsAsked = 0;
@@ -1247,7 +1252,7 @@ function showHabitat() {
 function enterTherapyOffice() {
     document.getElementById('habitatScreen').style.display = 'none';
     document.getElementById('therapyOffice').style.display = 'flex';
-    document.getElementById('mainGameArea').style.display = 'none'; // Use immersive flow by default
+    document.getElementById('mainGameArea').style.display = 'flex'; // Use immersive flow by default
     
     // Set therapy office content
     document.getElementById('npcName').textContent = currentNPC.npc_name;
